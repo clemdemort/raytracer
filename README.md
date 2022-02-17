@@ -1,12 +1,16 @@
 # raytraycer
 
-here is the code for a small-ish real time ray-tracer using openGL 4.3
-I am now using Arch based linux so compiling is much easier:
+Here is my attempr at a small-ish real time ray-tracer using openGL 4.3. This is obviously not done so expect some progress in the comming weeks/months to this project.
 
-> g++ main.cpp glad/glad.c -lglfw -lGL -lX11 -lpthread -lXrandr -lXi -ldl -o executable
+Compiling on Linux:
+the Compilation of this project is quite easy on linux:
+first off, download the package for "glfw3" and any that might be missing (see compilation command): 
 
-also make sure to install my configuration of glad:
+second off, install my configuration of glad which you can find here:
 > https://glad.dav1d.de/generated/tmp7s7wppfaglad/
+
+finaly in you terminal type:
+> g++ main.cpp glad/glad.c -lglfw -lGL -lX11 -lpthread -lXrandr -lXi -ldl -o executable
 
 Here is a picture of what the raytacer currently does:
 
