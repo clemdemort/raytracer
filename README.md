@@ -1,6 +1,6 @@
 # raytracer
 
-Here is my attempr at a small-ish real time ray-tracer using openGL 4.3. This is obviously not done so expect some progress in the comming weeks/months to this project.
+Here is my attempt at a small-ish real time ray-tracer using openGL 4.3. This is obviously not done so expect some progress in the comming weeks/months to this project.
 
 Here is a picture of what the raytacer currently does:
 
