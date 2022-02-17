@@ -18,9 +18,15 @@ Here is a picture of what the raytacer currently does:
 
 
 #controls:
+
 > W : Forward motion
+
 > A : Left motion
+
 > S : Backward motion
+
 > D : Right motion
+
 > TAB : Free Mouse
+
 > EXIT: exit the application
