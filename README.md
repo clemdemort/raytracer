@@ -17,7 +17,7 @@ Here is a picture of what the raytacer currently does:
 ![raytracergithub](https://user-images.githubusercontent.com/62178977/154512844-2d3fbf63-fe5f-4a1f-9de2-2b30d1e03309.png)
 
 
-#controls:
+# controls:
 
 > W : Forward motion
 
