@@ -2,6 +2,8 @@
 #define SHADER_H
 #include "glad/glad.h"
 #include <iostream>
+//I should probably mention that this is code i found on the openGL website for easily debugging my project
+//I did not create this code, only implemented it in my code through this header file which will remain as is for the most part.
 
 //opengl debbugging
 void APIENTRY glDebugOutput(GLenum source,
