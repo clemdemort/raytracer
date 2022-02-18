@@ -5,6 +5,7 @@
 #include <math.h>
 #include "shader.h"
 #include "TimeSync.h"
+#include "debug.h"
 #define PI 3.14159
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
@@ -54,7 +55,7 @@ int main()
 
     // build and compile our shader program
     // ------------------------------------
-    Shader ourShader("vertex.glsl", "fragment.glsl"); // you can name your shader files however you like
+    Shader renderer("vertex.glsl", "fragment.glsl"); // you can name your shader files however you like
 
     // set up vertex data (and buffer(s)) and configure vertex attributes
     // ------------------------------------------------------------------
@@ -96,11 +97,11 @@ int main()
             // -----
             processInput(window);
             glfwGetWindowSize(window,&SCR_WIDTH, &SCR_HEIGHT);
-            ourShader.setV2Float("iResolution",SCR_WIDTH,SCR_HEIGHT);
+            renderer.setV2Float("iResolution",SCR_WIDTH,SCR_HEIGHT);
             //top down view
-            ourShader.setV3Float("CameraPos",camX,camY,camZ);// spawn on top
-            ourShader.setV3Float("CameraRot",rotX,rotY,rotZ); //look down
-            ourShader.setFloat("Time",glfwGetTime());
+            renderer.setV3Float("CameraPos",camX,camY,camZ);// spawn on top
+            renderer.setV3Float("CameraRot",rotX,rotY,rotZ); //look down
+            renderer.setFloat("Time",glfwGetTime());
 
             // render
             // ------
@@ -108,7 +109,7 @@ int main()
             glClear(GL_COLOR_BUFFER_BIT);
 
             // render the triangle
-            ourShader.use();
+            renderer.use();
             //------------------------------------------------------------------------        glBindVertexArray(VAO);
             glDrawArrays(GL_TRIANGLES, 0, 3);
 

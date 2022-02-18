@@ -46,7 +46,7 @@ float hit_plane(plane ground,vec3 rayPos, vec3 rayDir)
     // assuming vectors are all normalized
     float t;
     float denom = dot(ground.normal, rayDir);
-    if (denom < 0) {
+    if (denom < 1e-6) {
         vec3 discriminant = ground.Pos - rayPos;
         t = dot(discriminant, ground.normal) / denom;
         return t;
