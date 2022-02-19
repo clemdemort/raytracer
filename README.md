@@ -15,7 +15,7 @@ First off, download the package for "glfw3" and any that might be missing (see c
 second off, install my configuration of glad which you can find here:
 > https://glad.dav1d.de/generated/tmp7s7wppfaglad/
 
-finaly in your terminal type:
+finaly in your terminal type in the project directory:
 > g++ main.cpp glad/glad.c -lglfw -lGL -lX11 -lpthread -lXrandr -lXi -ldl -o executable
 
 
