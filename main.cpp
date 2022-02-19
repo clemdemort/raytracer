@@ -6,6 +6,7 @@
 #include "shader.h"
 #include "TimeSync.h"
 #include "debug.h"
+#include "data.h"
 #define PI 3.14159
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
@@ -19,7 +20,7 @@ TimeSync Vsync; //video sync
 //initialise the camera position
 //------------------------------
 float camX = 0, camY = 0, camZ = 0, rotX = 0, rotY = 0, rotZ = 0, speed = 0, latspeed = 0;
-
+scene showcase(20,1,0);
 int main()
 {
     // glfw: initialize and configure
@@ -82,6 +83,18 @@ int main()
     // You can unbind the VAO afterwards so other VAO calls won't accidentally modify this VAO, but this rarely happens. Modifying other
     // VAOs requires a call to glBindVertexArray anyways so we generally don't unbind VAOs (nor VBOs) when it's not directly necessary.
     // glBindVertexArray(0);
+
+    //this will be the testing grounds for my scene array
+    std::cout<<"\nPosX of plane: "<< showcase.planelist[0].PosX << std::endl;
+    std::cout<<"PosY of plane: "<< showcase.planelist[0].PosY << std::endl;
+    std::cout<<"PosZ of plane: "<< showcase.planelist[0].PosZ << std::endl;
+    std::cout<<"normX of plane: "<< showcase.planelist[0].normX << std::endl;
+    std::cout<<"normY of plane: "<< showcase.planelist[0].normY << std::endl;
+    std::cout<<"normZ of plane: "<< showcase.planelist[0].normZ << std::endl;
+    std::cout<<"RED of plane: "<< showcase.planelist[0].colourRED << std::endl;
+    std::cout<<"GREEN of plane: "<< showcase.planelist[0].colourGREEN << std::endl;
+    std::cout<<"BLUE of plane: "<< showcase.planelist[0].colourBLUE << std::endl;
+    //should be good
 
 
     // render loop
