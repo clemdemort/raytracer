@@ -45,12 +45,15 @@ public:
     sphere * spherelist = new sphere[1];
     plane * planelist = new plane[1];
     cube * cubelist = new cube[1];
+    int numSpheres,numPlanes,numCubes;
     scene(int numofSpheres,int numofPlanes,int numofCubes)
     {
         delete[] spherelist;
         delete[] planelist;
         delete[] cubelist;
-
+        numSpheres = numofSpheres;
+        numPlanes = numofPlanes;
+        numCubes = numofCubes;
         spherelist = new sphere[numofSpheres];
         planelist = new plane[numofPlanes];
         cubelist = new cube[numofCubes];
@@ -60,16 +63,16 @@ public:
         //1st we will generate the plane on which the scene resides
         //for now only one since i want to keep things simple but eventually we wil have more
         planelist[0].PosX = 0;
-        planelist[0].PosY = 5;
+        planelist[0].PosY = 1;
         planelist[0].PosZ = 0;
 
         planelist[0].normX = 0;
         planelist[0].normY = 2;     //the plane will face up
         planelist[0].normZ = 0;
 
-        planelist[0].colourRED = 1;
-        planelist[0].colourGREEN = 1;
-        planelist[0].colourBLUE = 1;
+        planelist[0].colourRED = 0.1;
+        planelist[0].colourGREEN = 0.7;
+        planelist[0].colourBLUE = 0.1;
         planelist[0].transparency = 0;
         planelist[0].roughthness = 1;
 

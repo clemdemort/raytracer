@@ -6,6 +6,7 @@ uniform vec3 CameraRot;
 uniform vec2 iResolution;
 uniform float Time;
 
+layout(r32f, binding = 0) uniform image1D planes;//gets the binded texture
 //defining a sphere
 struct sphere
 {
@@ -24,7 +25,7 @@ struct plane
     vec3 colour;
 };
 
-plane ground = plane(vec3(0,-5,0),vec3(0,1,0),vec3(0.25,0.25,0.25));
+plane ground = plane(vec3(0,-5,0),vec3(0,1,0),vec3(0.2,0.2,0.2));
 
 //ray sphere collision
 float hit_sphere(sphere ball, vec3 rayPos, vec3 rayDir) {
@@ -116,5 +117,5 @@ void main()
         vec3 N = unit_vector(vec3((rayPos + t*rayDir) - vec3(0,0,-1)));
         FragColor = vec4(ball.colour,1);
     }
-
+    //FragColor.rgb = vec3(imageLoad(planes,1).r,imageLoad(planes,2).r,imageLoad(planes,3).r);
 }

@@ -11,11 +11,15 @@
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void processInput(GLFWwindow *window);
+void ShowFPS(GLFWwindow * window,std::string title, float ElapsedTime,float HOW_MANY_TIMES_A_SECOND);
+
 // settings
 int SCR_WIDTH = 800;
 int SCR_HEIGHT = 600;
 
 TimeSync Vsync; //video sync
+TimeSync Titlesync; //speed at which the screen should be refreshed
+
 
 //initialise the camera position
 //------------------------------
@@ -53,7 +57,8 @@ int main()
         std::cout << "Failed to initialize GLAD" << std::endl;
         return -1;
     }
-
+    //VSYNC set to 1 if activated 0 if not 2 if half
+    glfwSwapInterval(1);
     // build and compile our shader program
     // ------------------------------------
     Shader renderer("vertex.glsl", "fragment.glsl"); // you can name your shader files however you like
@@ -84,20 +89,55 @@ int main()
     // VAOs requires a call to glBindVertexArray anyways so we generally don't unbind VAOs (nor VBOs) when it's not directly necessary.
     // glBindVertexArray(0);
 
+
+    float * planesarray = new float[showcase.numPlanes*11];
+
+    for(int i = 0;i < showcase.numPlanes; i++)
+    {
+        planesarray[i] = showcase.planelist[i].PosX;
+        planesarray[i+1] = showcase.planelist[i].PosY;
+        planesarray[i+2] = showcase.planelist[i].PosZ;
+
+        planesarray[i+3] = showcase.planelist[i].normX;
+        planesarray[i+4] = showcase.planelist[i].normY;
+        planesarray[i+5] = showcase.planelist[i].normZ;
+
+        planesarray[i+6] = showcase.planelist[i].colourRED;
+        planesarray[i+7] = showcase.planelist[i].colourGREEN;
+        planesarray[i+8] = showcase.planelist[i].colourBLUE;
+        planesarray[i+9] = showcase.planelist[i].transparency;
+        planesarray[i+10] = showcase.planelist[i].roughthness;
+    }
     //this will be the testing grounds for my scene array
-    std::cout<<"\nPosX of plane: "<< showcase.planelist[0].PosX << std::endl;
-    std::cout<<"PosY of plane: "<< showcase.planelist[0].PosY << std::endl;
-    std::cout<<"PosZ of plane: "<< showcase.planelist[0].PosZ << std::endl;
-    std::cout<<"normX of plane: "<< showcase.planelist[0].normX << std::endl;
-    std::cout<<"normY of plane: "<< showcase.planelist[0].normY << std::endl;
-    std::cout<<"normZ of plane: "<< showcase.planelist[0].normZ << std::endl;
-    std::cout<<"RED of plane: "<< showcase.planelist[0].colourRED << std::endl;
-    std::cout<<"GREEN of plane: "<< showcase.planelist[0].colourGREEN << std::endl;
-    std::cout<<"BLUE of plane: "<< showcase.planelist[0].colourBLUE << std::endl;
-    //should be good
+    std::cout<<"\nPosX of plane: "<< planesarray[0] << std::endl;
+    std::cout<<"PosY of plane: "<< planesarray[1] << std::endl;
+    std::cout<<"PosZ of plane: "<< planesarray[2] << std::endl;
+    std::cout<<"normX of plane: "<< planesarray[3] << std::endl;
+    std::cout<<"normY of plane: "<< planesarray[4] << std::endl;
+    std::cout<<"normZ of plane: "<< planesarray[5] << std::endl;
+    std::cout<<"RED of plane: "<< planesarray[6] << std::endl;
+    std::cout<<"GREEN of plane: "<< planesarray[7] << std::endl;
+    std::cout<<"BLUE of plane: "<< planesarray[8]<< std::endl;
 
+    //this is how i transfer the content of the different object arrays WARNING: is hould change this to use SSBOs because this doesnt work
+    //------------------------------------------------------------
+    GLuint planesTex = 0;
+    int arrSize = (4 * showcase.numPlanes);
+    glGenTextures(1, &planesTex);
+    glBindTexture(GL_TEXTURE_1D,planesTex);
+    glTexImage1D(
+        GL_TEXTURE_1D,
+        0,
+        GL_R32F,
+        1,
+        0,                  // border: This value must be 0.
+        GL_RED,
+        GL_FLOAT,
+        planesarray
+    );
+    glMemoryBarrier(GL_TEXTURE_UPDATE_BARRIER_BIT);
+    //------------------------------------------------------------
 
-    // render loop
     // -----------
     while (!glfwWindowShouldClose(window))
     {
@@ -105,7 +145,8 @@ int main()
         if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
             glfwSetWindowShouldClose(window, true);
 
-        if(Vsync.Sync(60)){
+        if(Vsync.Sync(0)){
+            ShowFPS(window,"raytracer", Vsync.ElapsedTime,4);
             // input
             // -----
             processInput(window);
@@ -121,8 +162,18 @@ int main()
             glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
             glClear(GL_COLOR_BUFFER_BIT);
 
-            // render the triangle
+            // render the triangle using the shader
             renderer.use();
+            //we now need to bind the textures
+            //--------------------------------
+            //the texture containing all the data for the planes
+            glBindImageTexture(0,
+                planesTex,
+                0,
+                true,
+                0,
+                GL_READ_ONLY,
+                GL_R32F);
             //------------------------------------------------------------------------        glBindVertexArray(VAO);
             glDrawArrays(GL_TRIANGLES, 0, 3);
 
@@ -213,4 +264,16 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height)
     // make sure the viewport matches the new window dimensions; note that width and
     // height will be significantly larger than specified on retina displays.
     glViewport(0, 0, width, height);
+}
+void ShowFPS(GLFWwindow * window,std::string title, float ElapsedTime,float HOW_MANY_TIMES_A_SECOND)
+{
+    if (Titlesync.Sync(HOW_MANY_TIMES_A_SECOND)) {
+                //below you can set the window title
+                std::stringstream ss;
+                ss << int(1.0 / ElapsedTime);
+                std::string temp = ss.str();
+                std::string temp2 = title + " -FPS:" + temp;
+                char* FPS = (char*)temp2.c_str();
+                glfwSetWindowTitle(window, FPS);
+            }
 }

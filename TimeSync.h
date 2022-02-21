@@ -13,18 +13,24 @@ public:
     float t2{};
     float SyncClock{};
     float ElapsedTime{};
+    //if argument is set to zero or below zero then the function will execute as fast as it can while still providing the ElapsedTime
     bool Sync(float frames)
     {
+
         t2 = glfwGetTime();
         SyncClock += t2 - t1; //calculates the ElapsedTime
         ElapsedTime = SyncClock;
         t1 = t2;
-        if (SyncClock > (1.0 / frames))
-        {
-            SyncClock = 0;
-            return true;
-        }
-        return false;
+        if(frames > 0){
+            if (SyncClock > (1.0 / (frames+1.0f)))
+            {
+                SyncClock = 0;
+                return true;
+            }
+            return false;
+            }
+        SyncClock = 0;
+        return true;//if frametime is zero then the code executes as fast as it can
     }
     
 };
