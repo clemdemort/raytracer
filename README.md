@@ -32,3 +32,20 @@ finaly in your terminal type in the project directory:
 > TAB : Free Mouse
 
 > EXIT: exit the application
+
+# To-Do list:
+
+>add cubes
+
+>add distance testing
+
+>add shadow rays
+
+>add shadow shading
+
+>set up acceleration structure
+
+>add voxel objects
+
+>octree implementation or the voxel objects
+
