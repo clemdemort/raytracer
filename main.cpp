@@ -25,7 +25,7 @@ TimeSync Titlesync; //speed at which the screen should be refreshed
 //initialise the camera position
 //------------------------------
 float camX = 0, camY = 0, camZ = 0, rotX = 0, rotY = 0, rotZ = 0, speed = 0, latspeed = 0;
-scene showcase(4,1,0);
+scene showcase(25,1,0);
 int main()
 {
 
@@ -60,7 +60,7 @@ int main()
         return -1;
     }
     //VSYNC set to 1 if activated 0 if not 2 if half
-    glfwSwapInterval(0);
+    glfwSwapInterval(1);
     // build and compile our shader program
     // ------------------------------------
     Shader renderer("vertex.glsl", "fragment.glsl"); // you can name your shader files however you like
@@ -144,7 +144,7 @@ int main()
     GLuint SPHssbo;
     glGenBuffers(1, &SPHssbo);
     glBindBuffer(GL_SHADER_STORAGE_BUFFER, SPHssbo);
-    glBufferData(GL_SHADER_STORAGE_BUFFER, SarrSize, spheresarray, GL_DYNAMIC_DRAW);
+    glBufferData(GL_SHADER_STORAGE_BUFFER, SarrSize, spheresarray, GL_STATIC_DRAW);
     glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 2, SPHssbo);
 
 
@@ -164,7 +164,7 @@ int main()
         if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
             glfwSetWindowShouldClose(window, true);
 
-        if(Vsync.Sync(0)){
+        if(Vsync.Sync(60)){
             ShowFPS(window,"Raytracer", Vsync.ElapsedTime,4);
             // input
             // -----
