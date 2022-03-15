@@ -15,8 +15,8 @@ void processInput(GLFWwindow *window);
 void ShowFPS(GLFWwindow * window,std::string title, float ElapsedTime,float HOW_MANY_TIMES_A_SECOND);
 
 // settings
-int SCR_WIDTH = 500;
-int SCR_HEIGHT = 500;
+int SCR_WIDTH = 800;
+int SCR_HEIGHT = 600;
 
 TimeSync Vsync; //video sync
 TimeSync Titlesync; //speed at which the screen should be refreshed
@@ -25,9 +25,10 @@ TimeSync Titlesync; //speed at which the screen should be refreshed
 //initialise the camera position
 //------------------------------
 float camX = 0, camY = 0, camZ = 0, rotX = 0, rotY = 0, rotZ = 0, speed = 0, latspeed = 0;
-scene showcase(20,1,0);
+scene showcase(4,1,0);
 int main()
 {
+
     // glfw: initialize and configure
     // ------------------------------
     glfwInit();
@@ -59,7 +60,7 @@ int main()
         return -1;
     }
     //VSYNC set to 1 if activated 0 if not 2 if half
-    glfwSwapInterval(1);
+    glfwSwapInterval(0);
     // build and compile our shader program
     // ------------------------------------
     Shader renderer("vertex.glsl", "fragment.glsl"); // you can name your shader files however you like
@@ -89,11 +90,7 @@ int main()
     // You can unbind the VAO afterwards so other VAO calls won't accidentally modify this VAO, but this rarely happens. Modifying other
     // VAOs requires a call to glBindVertexArray anyways so we generally don't unbind VAOs (nor VBOs) when it's not directly necessary.
     // glBindVertexArray(0);
-
-
-    glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_NEAREST);
-    glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-    float * planesarray = new float[showcase.numPlanes*16];
+    float * planesarray = new float[showcase.numPlanes*11];
 
     for(int i = 0;i < showcase.numPlanes; i++)
     {
@@ -111,26 +108,53 @@ int main()
         planesarray[i+9] = showcase.planelist[i].transparency;
         planesarray[i+10] = showcase.planelist[i].roughthness;
     }
-    //this will be the testing grounds for my scene array
-    std::cout<<"\nPosX of plane: "<< planesarray[0] << std::endl;
-    std::cout<<"PosY of plane: "<< planesarray[1] << std::endl;
-    std::cout<<"PosZ of plane: "<< planesarray[2] << std::endl;
-    std::cout<<"normX of plane: "<< planesarray[3] << std::endl;
-    std::cout<<"normY of plane: "<< planesarray[4] << std::endl;
-    std::cout<<"normZ of plane: "<< planesarray[5] << std::endl;
-    std::cout<<"RED of plane: "<< planesarray[6] << std::endl;
-    std::cout<<"GREEN of plane: "<< planesarray[7] << std::endl;
-    std::cout<<"BLUE of plane: "<< planesarray[8]<< std::endl;
+
+    float * spheresarray = new float[showcase.numSpheres*9];
+
+    for(int i = 0;i < showcase.numSpheres; i++)
+    {
+        spheresarray[(9*i)] = showcase.spherelist[i].PosX;
+        spheresarray[(9*i)+1] = showcase.spherelist[i].PosY;
+        spheresarray[(9*i)+2] = showcase.spherelist[i].PosZ;
+
+        spheresarray[(9*i)+3] = showcase.spherelist[i].Size;
+
+        spheresarray[(9*i)+4] = showcase.spherelist[i].colourRED;
+        spheresarray[(9*i)+5] = showcase.spherelist[i].colourGREEN;
+        spheresarray[(9*i)+6] = showcase.spherelist[i].colourBLUE;
+        spheresarray[(9*i)+7] = showcase.spherelist[i].transparency;
+        spheresarray[(9*i)+8] = showcase.spherelist[i].roughthness;
+    }
 
     //this is how i transfer the content of the different object arrays
     //-----------------------------------------------------------------
-    int arrSize = (4 * showcase.numPlanes*16);
+
+    //transphering Plane Data:
+    //------------------------
+    int ParrSize = (4 * showcase.numPlanes*11);
     GLuint PLAssbo;
     glGenBuffers(1, &PLAssbo);
     glBindBuffer(GL_SHADER_STORAGE_BUFFER, PLAssbo);
-    glBufferData(GL_SHADER_STORAGE_BUFFER, arrSize, planesarray, GL_DYNAMIC_DRAW);
+    glBufferData(GL_SHADER_STORAGE_BUFFER, ParrSize, planesarray, GL_DYNAMIC_DRAW);
     glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, PLAssbo);
-    //glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0); // unbind
+
+    //transphering Sphere Data:
+    //-------------------------
+    int SarrSize = (4 * showcase.numSpheres*9);
+    GLuint SPHssbo;
+    glGenBuffers(1, &SPHssbo);
+    glBindBuffer(GL_SHADER_STORAGE_BUFFER, SPHssbo);
+    glBufferData(GL_SHADER_STORAGE_BUFFER, SarrSize, spheresarray, GL_DYNAMIC_DRAW);
+    glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 2, SPHssbo);
+
+
+
+//     int CarrSize = (4 * showcase.numPlanes*11);
+//     GLuint CUBssbo;
+//     glGenBuffers(1, &PLAssbo);
+//     glBindBuffer(GL_SHADER_STORAGE_BUFFER, CUBssbo);
+//     glBufferData(GL_SHADER_STORAGE_BUFFER, ParrSize, planesarray, GL_DYNAMIC_DRAW);
+//     glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, PLAssbo);
     //------------------------------------------------------------
     glUseProgram(0);
     // -----------
@@ -140,7 +164,7 @@ int main()
         if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
             glfwSetWindowShouldClose(window, true);
 
-        if(Vsync.Sync(60)){
+        if(Vsync.Sync(0)){
             ShowFPS(window,"Raytracer", Vsync.ElapsedTime,4);
             // input
             // -----
@@ -151,6 +175,8 @@ int main()
             renderer.setV3Float("CameraPos",camX,camY,camZ);// spawn on top
             renderer.setV3Float("CameraRot",rotX,rotY,rotZ); //look down
             renderer.setFloat("Time",glfwGetTime());
+            renderer.setInt("planesNUM",ParrSize/4);
+            renderer.setInt("sphereNUM",SarrSize/4);
 
             // render
             // ------
@@ -176,6 +202,8 @@ int main()
     // ------------------------------------------------------------------------
     glDeleteVertexArrays(1, &VAO);
     glDeleteBuffers(1, &VBO);
+    glDeleteBuffers(1, &PLAssbo);
+    glDeleteBuffers(1, &SPHssbo);
 
     // glfw: terminate, clearing all previously allocated GLFW resources.
     // ------------------------------------------------------------------

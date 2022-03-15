@@ -5,10 +5,16 @@ uniform vec3 CameraPos;
 uniform vec3 CameraRot;
 uniform vec2 iResolution;
 uniform float Time;
+uniform int sphereNUM;
 
 layout(std430, binding = 1) buffer planesLayout
 {
     float plane_SSBO[];
+};
+
+layout(std430, binding = 2) buffer spheresLayout
+{
+    float sphere_SSBO[];
 };
 //defining a sphere
 struct sphere
@@ -19,7 +25,7 @@ struct sphere
 };
 
 //defining a sphere
-sphere ball = sphere(vec3(0,0,3),vec3(1,0,1),3);
+sphere ball = sphere(vec3(sphere_SSBO[0],sphere_SSBO[1],sphere_SSBO[2]),vec3(sphere_SSBO[4],sphere_SSBO[5],sphere_SSBO[6]),sphere_SSBO[3]);
 
 struct plane
 {
@@ -31,11 +37,15 @@ struct plane
 plane ground = plane(vec3(plane_SSBO[0],plane_SSBO[1],plane_SSBO[2]),vec3(plane_SSBO[3],plane_SSBO[4],plane_SSBO[5]),vec3(plane_SSBO[6],plane_SSBO[7],plane_SSBO[8]));
 
 //ray sphere collision
-float hit_sphere(sphere ball, vec3 rayPos, vec3 rayDir) {
-    vec3 oc = rayPos - ball.Pos;
+float hit_sphere(int IDX,vec3 rayPos, vec3 rayDir) {
+
+    vec3 pos = vec3(sphere_SSBO[0+(IDX*9)],sphere_SSBO[1+(IDX*9)],sphere_SSBO[2+(IDX*9)]);
+    float Radius = sphere_SSBO[3+(IDX*9)];
+
+    vec3 oc = rayPos - pos;
     float a = dot(rayDir, rayDir);
     float b = 2.0 * dot(oc, rayDir);
-    float c = dot(oc, oc) - ball.Radius*ball.Radius;
+    float c = dot(oc, oc) - Radius*Radius;
     float discriminant = b*b - 4*a*c;
     if (discriminant < 0) {
         //ray doesn't intersect with the ball
@@ -114,10 +124,11 @@ void main()
     {
         FragColor = vec4(ground.colour,1);
     }
-
-    t = hit_sphere(ball,rayPos,rayDir);
-    if (t > 0.0) {
-        vec3 N = unit_vector(vec3((rayPos + t*rayDir) - vec3(0,0,-1)));
-        FragColor = vec4(ball.colour,1);
+    for(int i = 0; i < sphereNUM; i++){
+        t = hit_sphere(i,rayPos,rayDir);
+        if (t > 0.0) {
+            vec3 N = unit_vector(vec3((rayPos + t*rayDir) - vec3(0,0,-1)));
+            FragColor = vec4(sphere_SSBO[4+(i*9)],sphere_SSBO[5+(i*9)],sphere_SSBO[6+(i*9)],1);
+        }
     }
 }

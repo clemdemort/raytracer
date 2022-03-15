@@ -3,9 +3,11 @@
 
 #include <iostream>
 #include <GLFW/glfw3.h>
+#include <time.h>
 
-int getrand(int min ,int max)
+float getrand(int min ,int max)
 {
+    srand(clock());
     return min+(rand() % (max-min));
 }
 
@@ -42,6 +44,7 @@ struct cube     //14 floats
 class scene
 {
 public:
+
     sphere * spherelist = new sphere[1];
     plane * planelist = new plane[1];
     cube * cubelist = new cube[1];
@@ -63,7 +66,7 @@ public:
         //1st we will generate the plane on which the scene resides
         //for now only one since i want to keep things simple but eventually we wil have more
         planelist[0].PosX = 0;
-        planelist[0].PosY = 1;
+        planelist[0].PosY = 0;
         planelist[0].PosZ = 0;
 
         planelist[0].normX = 0;
@@ -78,14 +81,14 @@ public:
 
         //2nd we will generate the spheres
         //to do so we need to set mins and max for positions and Size
-        float maxPosX = 50;
-        float minPosX = -50;
-        float maxPosY = 50;
+        float maxPosX = 20;
+        float minPosX = -20;
+        float maxPosY = 40;
         float minPosY = 0;
-        float maxPosZ = 50;
-        float minPosZ = -50;
+        float maxPosZ = 20;
+        float minPosZ = -20;
 
-        float minSize = 0.01;
+        float minSize = 1;
         float maxSize = 5;
 
         //initialising the random seed
@@ -93,11 +96,11 @@ public:
 
         for(int i = 0; i < numofSpheres; i++)
         {
-            spherelist[i].PosX = getrand(minPosX*100,maxPosX*100)/100.0;        //we want a bit more floating point precision
-            spherelist[i].PosY = getrand(minPosY*100,maxPosY*100)/100.0;
-            spherelist[i].PosZ = getrand(minPosZ*100,maxPosZ*100)/100.0;
+            spherelist[i].PosX = getrand(minPosX*100.0,maxPosX*100.0)/100;        //we want a bit more floating point precision
+            spherelist[i].PosY = getrand(minPosY*100.0,maxPosY*100.0)/100;
+            spherelist[i].PosZ = getrand(minPosZ*100.0,maxPosZ*100.0)/100;
 
-            spherelist[i].Size = getrand(minSize*100,maxSize*100)/100.0;
+            spherelist[i].Size = getrand(minSize*100,maxSize*100)/100;
 
             spherelist[i].colourRED     = getrand(0,255)/255.0;
             spherelist[i].colourGREEN   = getrand(0,255)/255.0;
