@@ -3,6 +3,7 @@
 #include <GLFW/glfw3.h>
 #include <iostream>
 #include <math.h>
+#include <memory>
 #include "shader.h"
 #include "TimeSync.h"
 #include "debug.h"
@@ -14,8 +15,8 @@ void processInput(GLFWwindow *window);
 void ShowFPS(GLFWwindow * window,std::string title, float ElapsedTime,float HOW_MANY_TIMES_A_SECOND);
 
 // settings
-int SCR_WIDTH = 800;
-int SCR_HEIGHT = 600;
+int SCR_WIDTH = 500;
+int SCR_HEIGHT = 500;
 
 TimeSync Vsync; //video sync
 TimeSync Titlesync; //speed at which the screen should be refreshed
@@ -40,7 +41,7 @@ int main()
 
     // glfw window creation
     // --------------------
-    GLFWwindow* window = glfwCreateWindow(SCR_WIDTH, SCR_HEIGHT, "Raytracer", NULL, NULL);
+    GLFWwindow* window = glfwCreateWindow(SCR_WIDTH, SCR_HEIGHT, "loading...", NULL, NULL);
     if (window == NULL)
     {
         std::cout << "Failed to create GLFW window" << std::endl;
@@ -90,7 +91,9 @@ int main()
     // glBindVertexArray(0);
 
 
-    float * planesarray = new float[showcase.numPlanes*11];
+    glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_NEAREST);
+    glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    float * planesarray = new float[showcase.numPlanes*16];
 
     for(int i = 0;i < showcase.numPlanes; i++)
     {
@@ -119,25 +122,17 @@ int main()
     std::cout<<"GREEN of plane: "<< planesarray[7] << std::endl;
     std::cout<<"BLUE of plane: "<< planesarray[8]<< std::endl;
 
-    //this is how i transfer the content of the different object arrays WARNING: is hould change this to use SSBOs because this doesnt work
+    //this is how i transfer the content of the different object arrays
+    //-----------------------------------------------------------------
+    int arrSize = (4 * showcase.numPlanes*16);
+    GLuint PLAssbo;
+    glGenBuffers(1, &PLAssbo);
+    glBindBuffer(GL_SHADER_STORAGE_BUFFER, PLAssbo);
+    glBufferData(GL_SHADER_STORAGE_BUFFER, arrSize, planesarray, GL_DYNAMIC_DRAW);
+    glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, PLAssbo);
+    //glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0); // unbind
     //------------------------------------------------------------
-    GLuint planesTex = 0;
-    int arrSize = (4 * showcase.numPlanes);
-    glGenTextures(1, &planesTex);
-    glBindTexture(GL_TEXTURE_1D,planesTex);
-    glTexImage1D(
-        GL_TEXTURE_1D,
-        0,
-        GL_R32F,
-        1,
-        0,                  // border: This value must be 0.
-        GL_RED,
-        GL_FLOAT,
-        planesarray
-    );
-    glMemoryBarrier(GL_TEXTURE_UPDATE_BARRIER_BIT);
-    //------------------------------------------------------------
-
+    glUseProgram(0);
     // -----------
     while (!glfwWindowShouldClose(window))
     {
@@ -145,8 +140,8 @@ int main()
         if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
             glfwSetWindowShouldClose(window, true);
 
-        if(Vsync.Sync(0)){
-            ShowFPS(window,"raytracer", Vsync.ElapsedTime,4);
+        if(Vsync.Sync(60)){
+            ShowFPS(window,"Raytracer", Vsync.ElapsedTime,4);
             // input
             // -----
             processInput(window);
@@ -167,13 +162,7 @@ int main()
             //we now need to bind the textures
             //--------------------------------
             //the texture containing all the data for the planes
-            glBindImageTexture(0,
-                planesTex,
-                0,
-                true,
-                0,
-                GL_READ_ONLY,
-                GL_R32F);
+
             //------------------------------------------------------------------------        glBindVertexArray(VAO);
             glDrawArrays(GL_TRIANGLES, 0, 3);
 
