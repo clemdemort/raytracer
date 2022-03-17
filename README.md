@@ -47,5 +47,5 @@ finaly in your terminal type in the project directory:
 
 >add voxel objects
 
->octree implementation or the voxel objects
+>octree implementation on the voxel objects
 
