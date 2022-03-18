@@ -25,10 +25,9 @@ TimeSync Titlesync; //speed at which the screen should be refreshed
 //initialise the camera position
 //------------------------------
 float camX = 0, camY = 10, camZ = -20, rotX = 0, rotY = 0, rotZ = 0, speed = 0, latspeed = 0;
-scene showcase(50,0);
+scene showcase(25,0);
 int main()
 {
-    printf("test1");
     // glfw: initialize and configure
     // ------------------------------
     glfwInit();
@@ -91,8 +90,6 @@ int main()
     // glBindVertexArray(0);
     float * spheresarray = new float[showcase.numSpheres*9]; //initializing the array to intercept the data -> it must have the right size.
     showcase.ToSSBOData("GET_SPHERE_DATA",spheresarray);
-    for(int i = 0; i < showcase.numSpheres*9;i++)
-        std::cout<<spheresarray[i]<<std::endl;
 
     //this is how i transfer the content of the different object arrays
     //-----------------------------------------------------------------
