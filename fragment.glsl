@@ -5,37 +5,17 @@ uniform vec3 CameraPos;
 uniform vec3 CameraRot;
 uniform vec2 iResolution;
 uniform float Time;
+
+uniform vec3 planeNormal;
+uniform vec3 planePos;
+uniform vec3 planeColour;
+
 uniform int sphereNUM;
 
-layout(std430, binding = 1) buffer planesLayout
-{
-    float plane_SSBO[];
-};
-
-layout(std430, binding = 2) buffer spheresLayout
+layout(std430, binding = 1) buffer spheresLayout
 {
     float sphere_SSBO[];
 };
-//defining a sphere
-struct sphere
-{
-    vec3 Pos;
-    vec3 colour;
-    float Radius;
-};
-
-//defining a sphere
-sphere ball = sphere(vec3(sphere_SSBO[0],sphere_SSBO[1],sphere_SSBO[2]),vec3(sphere_SSBO[4],sphere_SSBO[5],sphere_SSBO[6]),sphere_SSBO[3]);
-
-struct plane
-{
-    vec3 Pos;
-    vec3 normal;
-    vec3 colour;
-};
-
-plane ground = plane(vec3(plane_SSBO[0],plane_SSBO[1],plane_SSBO[2]),vec3(plane_SSBO[3],plane_SSBO[4],plane_SSBO[5]),vec3(plane_SSBO[6],plane_SSBO[7],plane_SSBO[8]));
-
 //ray sphere collision
 float hit_sphere(int IDX,vec3 rayPos, vec3 rayDir) {
 
@@ -55,16 +35,16 @@ float hit_sphere(int IDX,vec3 rayPos, vec3 rayDir) {
     }
 }
 
-float hit_plane(plane ground,vec3 rayPos, vec3 rayDir)
+float hit_plane(vec3 rayPos, vec3 rayDir)
 {
-    // assuming vectors are all normalized
     float t;
-    float denom = dot(ground.normal, rayDir);
+    float denom = dot(planeNormal, rayDir);
     if (denom < 1e-6) {
-        vec3 discriminant = ground.Pos - rayPos;
-        t = dot(discriminant, ground.normal) / denom;
+        vec3 discriminant = planePos - rayPos;
+        t = dot(discriminant, planeNormal) / denom;
         return t;
     }
+    //ray doesnt intersect with plane
     return -1.0;
 }
 
@@ -109,6 +89,9 @@ void main()
 	vec3 rayDir = cameraDir + screenPos.x * cameraPlaneU + screenPos.y * cameraPlaneV;
 	vec3 rayPos = CameraPos;
 	rayDir = rotate3d(rayDir,CameraRot.y,CameraRot.x);
+
+	//coding the sky
+	//--------------
 	vec3 horizon = vec3(0.5,0.5,1);
 	vec3 up = vec3(0.25,0.25,0.75);
 	vec3 down = vec3(0.05,0.05,0.15);
@@ -116,13 +99,13 @@ void main()
 	FragColor = vec4(col, 1.0);
     //-----------------------------
 
-    //this part will try to work out the colour of the ray
+    //this part will try to work out the colour of the ray by colliding it with the objects in the scene
+    //--------------------------------------------------------------------------------------------------
 
-
-    float t = hit_plane(ground,rayPos,rayDir);
+    float t = hit_plane(rayPos,rayDir);
     if(t > 0.0)
     {
-        FragColor = vec4(ground.colour,1);
+        FragColor = vec4(planeColour,1);
     }
     for(int i = 0; i < sphereNUM; i++){
         t = hit_sphere(i,rayPos,rayDir);

@@ -24,11 +24,11 @@ TimeSync Titlesync; //speed at which the screen should be refreshed
 
 //initialise the camera position
 //------------------------------
-float camX = 0, camY = 0, camZ = 0, rotX = 0, rotY = 0, rotZ = 0, speed = 0, latspeed = 0;
-scene showcase(25,1,0);
+float camX = 0, camY = 10, camZ = -20, rotX = 0, rotY = 0, rotZ = 0, speed = 0, latspeed = 0;
+scene showcase(50,0);
 int main()
 {
-
+    printf("test1");
     // glfw: initialize and configure
     // ------------------------------
     glfwInit();
@@ -63,7 +63,8 @@ int main()
     glfwSwapInterval(1);
     // build and compile our shader program
     // ------------------------------------
-    Shader renderer("vertex.glsl", "fragment.glsl"); // you can name your shader files however you like
+
+    Shader renderer("vertex.glsl", "fragment.glsl");
 
     // set up vertex data (and buffer(s)) and configure vertex attributes
     // ------------------------------------------------------------------
@@ -87,56 +88,14 @@ int main()
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
     glEnableVertexAttribArray(0);
 
-    // You can unbind the VAO afterwards so other VAO calls won't accidentally modify this VAO, but this rarely happens. Modifying other
-    // VAOs requires a call to glBindVertexArray anyways so we generally don't unbind VAOs (nor VBOs) when it's not directly necessary.
     // glBindVertexArray(0);
-    float * planesarray = new float[showcase.numPlanes*11];
-
-    for(int i = 0;i < showcase.numPlanes; i++)
-    {
-        planesarray[i] = showcase.planelist[i].PosX;
-        planesarray[i+1] = showcase.planelist[i].PosY;
-        planesarray[i+2] = showcase.planelist[i].PosZ;
-
-        planesarray[i+3] = showcase.planelist[i].normX;
-        planesarray[i+4] = showcase.planelist[i].normY;
-        planesarray[i+5] = showcase.planelist[i].normZ;
-
-        planesarray[i+6] = showcase.planelist[i].colourRED;
-        planesarray[i+7] = showcase.planelist[i].colourGREEN;
-        planesarray[i+8] = showcase.planelist[i].colourBLUE;
-        planesarray[i+9] = showcase.planelist[i].transparency;
-        planesarray[i+10] = showcase.planelist[i].roughthness;
-    }
-
-    float * spheresarray = new float[showcase.numSpheres*9];
-
-    for(int i = 0;i < showcase.numSpheres; i++)
-    {
-        spheresarray[(9*i)] = showcase.spherelist[i].PosX;
-        spheresarray[(9*i)+1] = showcase.spherelist[i].PosY;
-        spheresarray[(9*i)+2] = showcase.spherelist[i].PosZ;
-
-        spheresarray[(9*i)+3] = showcase.spherelist[i].Size;
-
-        spheresarray[(9*i)+4] = showcase.spherelist[i].colourRED;
-        spheresarray[(9*i)+5] = showcase.spherelist[i].colourGREEN;
-        spheresarray[(9*i)+6] = showcase.spherelist[i].colourBLUE;
-        spheresarray[(9*i)+7] = showcase.spherelist[i].transparency;
-        spheresarray[(9*i)+8] = showcase.spherelist[i].roughthness;
-    }
+    float * spheresarray = new float[showcase.numSpheres*9]; //initializing the array to intercept the data -> it must have the right size.
+    showcase.ToSSBOData("GET_SPHERE_DATA",spheresarray);
+    for(int i = 0; i < showcase.numSpheres*9;i++)
+        std::cout<<spheresarray[i]<<std::endl;
 
     //this is how i transfer the content of the different object arrays
     //-----------------------------------------------------------------
-
-    //transphering Plane Data:
-    //------------------------
-    int ParrSize = (4 * showcase.numPlanes*11);
-    GLuint PLAssbo;
-    glGenBuffers(1, &PLAssbo);
-    glBindBuffer(GL_SHADER_STORAGE_BUFFER, PLAssbo);
-    glBufferData(GL_SHADER_STORAGE_BUFFER, ParrSize, planesarray, GL_DYNAMIC_DRAW);
-    glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, PLAssbo);
 
     //transphering Sphere Data:
     //-------------------------
@@ -145,25 +104,17 @@ int main()
     glGenBuffers(1, &SPHssbo);
     glBindBuffer(GL_SHADER_STORAGE_BUFFER, SPHssbo);
     glBufferData(GL_SHADER_STORAGE_BUFFER, SarrSize, spheresarray, GL_STATIC_DRAW);
-    glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 2, SPHssbo);
+    glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, SPHssbo);
 
-
-
-//     int CarrSize = (4 * showcase.numPlanes*11);
-//     GLuint CUBssbo;
-//     glGenBuffers(1, &PLAssbo);
-//     glBindBuffer(GL_SHADER_STORAGE_BUFFER, CUBssbo);
-//     glBufferData(GL_SHADER_STORAGE_BUFFER, ParrSize, planesarray, GL_DYNAMIC_DRAW);
-//     glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, PLAssbo);
     //------------------------------------------------------------
-    glUseProgram(0);
+    glUseProgram(0); //clearing any program already linked
     // -----------
     while (!glfwWindowShouldClose(window))
     {
         //emergency stop press EXIT to kill any process
         if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
             glfwSetWindowShouldClose(window, true);
-
+        //this will repeat 60 times a second
         if(Vsync.Sync(60)){
             ShowFPS(window,"Raytracer", Vsync.ElapsedTime,4);
             // input
@@ -175,8 +126,10 @@ int main()
             renderer.setV3Float("CameraPos",camX,camY,camZ);// spawn on top
             renderer.setV3Float("CameraRot",rotX,rotY,rotZ); //look down
             renderer.setFloat("Time",glfwGetTime());
-            renderer.setInt("planesNUM",ParrSize/4);
             renderer.setInt("sphereNUM",SarrSize/4);
+            renderer.setV3Float("planePos",0,0,0);
+            renderer.setV3Float("planeNormal",0,1,0);
+            renderer.setV3Float("planeColour",0.75,0.75,0.75);
 
             // render
             // ------
@@ -185,9 +138,6 @@ int main()
 
             // render the triangle using the shader
             renderer.use();
-            //we now need to bind the textures
-            //--------------------------------
-            //the texture containing all the data for the planes
 
             //------------------------------------------------------------------------        glBindVertexArray(VAO);
             glDrawArrays(GL_TRIANGLES, 0, 3);
@@ -202,7 +152,6 @@ int main()
     // ------------------------------------------------------------------------
     glDeleteVertexArrays(1, &VAO);
     glDeleteBuffers(1, &VBO);
-    glDeleteBuffers(1, &PLAssbo);
     glDeleteBuffers(1, &SPHssbo);
 
     // glfw: terminate, clearing all previously allocated GLFW resources.

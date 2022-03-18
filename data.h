@@ -4,10 +4,10 @@
 #include <iostream>
 #include <GLFW/glfw3.h>
 #include <time.h>
+#include <math.h>
 
 float getrand(int min ,int max)
 {
-    srand(clock());
     return min+(rand() % (max-min));
 }
 
@@ -18,15 +18,6 @@ struct sphere   //9 floats
     float PosX,PosY,PosZ;
     //Param 2
     float Size;
-    //Param 3
-    float colourRED,colourGREEN,colourBLUE,transparency,roughthness;
-};
-struct plane    //11 floats
-{
-    //Param 1
-    float PosX,PosY,PosZ;
-    //Param 2
-    float normX,normY,normZ;
     //Param 3
     float colourRED,colourGREEN,colourBLUE,transparency,roughthness;
 };
@@ -46,40 +37,20 @@ class scene
 public:
 
     sphere * spherelist = new sphere[1];
-    plane * planelist = new plane[1];
     cube * cubelist = new cube[1];
-    int numSpheres,numPlanes,numCubes;
-    scene(int numofSpheres,int numofPlanes,int numofCubes)
+    int numSpheres,numCubes;
+    scene(int numofSpheres,int numofCubes)
     {
         delete[] spherelist;
-        delete[] planelist;
         delete[] cubelist;
         numSpheres = numofSpheres;
-        numPlanes = numofPlanes;
         numCubes = numofCubes;
         spherelist = new sphere[numofSpheres];
-        planelist = new plane[numofPlanes];
         cubelist = new cube[numofCubes];
         //------------------------------------
         //this part will be responsible for generating the geometry so it should be easy enough to tweak
 
-        //1st we will generate the plane on which the scene resides
-        //for now only one since i want to keep things simple but eventually we wil have more
-        planelist[0].PosX = 0;
-        planelist[0].PosY = 0;
-        planelist[0].PosZ = 0;
-
-        planelist[0].normX = 0;
-        planelist[0].normY = 2;     //the plane will face up
-        planelist[0].normZ = 0;
-
-        planelist[0].colourRED = 0.1;
-        planelist[0].colourGREEN = 0.7;
-        planelist[0].colourBLUE = 0.1;
-        planelist[0].transparency = 0;
-        planelist[0].roughthness = 1;
-
-        //2nd we will generate the spheres
+        //1st we will generate the spheres
         //to do so we need to set mins and max for positions and Size
         float maxPosX = 50;
         float minPosX = -50;
@@ -92,7 +63,7 @@ public:
         float maxSize = 5;
 
         //initialising the random seed
-        srand(glfwGetTime());
+        srand(pow(clock(),9999));
 
         for(int i = 0; i < numofSpheres; i++)
         {
@@ -107,6 +78,44 @@ public:
             spherelist[i].colourBLUE    = getrand(0,255)/255.0;
             spherelist[i].transparency  = getrand(0,255)/255.0;     //these last two wont do much as of yet but they will play a key role in the future
             spherelist[i].roughthness   = getrand(0,255)/255.0;
+        }
+    }
+    void ToSSBOData(std::string param,float *& data)
+    {
+        if(param == "GET_SPHERE_DATA"){
+            for(int i = 0;i < numSpheres; i++)
+            {
+                data[(9*i)]   = spherelist[i].PosX;
+                data[(9*i)+1] = spherelist[i].PosY;
+                data[(9*i)+2] = spherelist[i].PosZ;
+                data[(9*i)+3] = spherelist[i].Size;
+                data[(9*i)+4] = spherelist[i].colourRED;
+                data[(9*i)+5] = spherelist[i].colourGREEN;
+                data[(9*i)+6] = spherelist[i].colourBLUE;
+                data[(9*i)+7] = spherelist[i].transparency;
+                data[(9*i)+8] = spherelist[i].roughthness;
+            }
+
+        }
+        if(param == "GET_CUBE_DATA"){
+            for(int i = 0;i < numCubes; i++)
+            {
+                data[(14*i)]    = cubelist[i].PosX;
+                data[(14*i)+1]  = cubelist[i].PosY;
+                data[(14*i)+2]  = cubelist[i].PosZ;
+                data[(14*i)+3]  = cubelist[i].SizeX;
+                data[(14*i)+4]  = cubelist[i].SizeY;
+                data[(14*i)+5]  = cubelist[i].SizeZ;
+                data[(14*i)+6]  = cubelist[i].RotX;
+                data[(14*i)+7]  = cubelist[i].RotY;
+                data[(14*i)+8]  = cubelist[i].RotZ;
+                data[(14*i)+9]  = cubelist[i].colourRED;
+                data[(14*i)+10] = cubelist[i].colourGREEN;
+                data[(14*i)+11] = cubelist[i].colourBLUE;
+                data[(14*i)+12] = cubelist[i].transparency;
+                data[(14*i)+13] = cubelist[i].roughthness;
+            }
+
         }
     }
 //amogus
