@@ -25,7 +25,7 @@ TimeSync Titlesync; //speed at which the screen should be refreshed
 //initialise the camera position
 //------------------------------
 float camX = 0, camY = 10, camZ = -20, rotX = 0, rotY = 0, rotZ = 0, speed = 0, latspeed = 0;
-scene showcase(100,100);
+scene showcase(50,50);
 int main()
 {
     // glfw: initialize and configure
@@ -137,6 +137,7 @@ int main()
             renderer.setFloat("Time",glfwGetTime());
             renderer.setInt("sphereNUM",showcase.numSpheres);
             renderer.setInt("cubeNUM",showcase.numCubes);
+            renderer.setV3Float("sunDir",cos(glfwGetTime()/100.0),1,sin(glfwGetTime()/100.0));
             renderer.setV3Float("planePos",0,0,0);
             renderer.setV3Float("planeNormal",0,1,0);
             renderer.setV3Float("planeColour",0.75,0.75,0.75);

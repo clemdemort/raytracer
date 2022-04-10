@@ -23,8 +23,14 @@ uniform vec3 planeNormal;
 uniform vec3 planePos;
 uniform vec3 planeColour;
 
+uniform vec3 sunDir;
+
 uniform int sphereNUM;
 uniform int cubeNUM;
+
+//global variables
+
+vec3 normal;
 
 layout(std430, binding = 1) buffer spheresLayout
 {
@@ -46,8 +52,8 @@ float Cube(vec3 rayPos, vec3 rayDir,vec3 pos, vec3 boxSize)
     vec3 t2 = -n + k;
     float tN = max( max( t1.x, t1.y ), t1.z );
     float tF = min( min( t2.x, t2.y ), t2.z );//    far intersection which we "might" need in the future.
-    if( tN>tF || tF<0.0) return -1.0; // no intersection
-    //Normal = -sign(rayDir)*step(t1.yzx,t1.xyz)*step(t1.zxy,t1.xyz);   Normal of the intersection we will need this but not yet
+    if( tN>=tF || tF<0.0) return -1.0; // no intersection
+    normal = -sign(rayDir)*step(t1.yzx,t1.xyz)*step(t1.zxy,t1.xyz);
     return tN;
 }
 
@@ -108,6 +114,7 @@ vec4 SceneIntersection(vec3 rayDir, vec3 rayPos,vec4 BGColour)
     {
         hitcolour = vec4(planeColour,1);
         hitDist = dist;
+        normal = planeNormal;
     }
     for(int i = 0; i < sphereNUM; i++){
         vec3 pos = vec3(sphere_SSBO[0+(i*9)],sphere_SSBO[1+(i*9)],sphere_SSBO[2+(i*9)]);
@@ -115,8 +122,8 @@ vec4 SceneIntersection(vec3 rayDir, vec3 rayPos,vec4 BGColour)
         float dist = Sphere(rayPos,rayDir,pos,Radius);
         if (dist < hitDist && dist > 0.0) {
             hitDist = dist;
-            //vec3 N = unit_vector(vec3((rayPos + t*rayDir) - vec3(0,0,-1)));
             hitcolour = vec4(sphere_SSBO[4+(i*9)],sphere_SSBO[5+(i*9)],sphere_SSBO[6+(i*9)],1);
+            normal = normalize(rayPos+(rayDir*dist) + pos);
         }
     }
     for(int i = 0; i < cubeNUM; i++){
@@ -125,11 +132,44 @@ vec4 SceneIntersection(vec3 rayDir, vec3 rayPos,vec4 BGColour)
         float dist = Cube(rayPos,rayDir,pos,size);
         if (dist < hitDist && dist > 0.0) {
             hitDist = dist;
-            //vec3 N = unit_vector(vec3((rayPos + t*rayDir) - vec3(0,0,-1)));
             hitcolour = vec4(cube_SSBO[9+(i*14)],cube_SSBO[10+(i*14)],cube_SSBO[11+(i*14)],1);
         }
     }
+    hitcolour.w = hitDist;
     return hitcolour;
+}
+vec4 ShadowRays(vec3 rayDir, vec3 rayPos,vec4 oldColour)
+{
+    //this part will try to work out the colour of the ray by colliding it with the objects in the scene
+    //--------------------------------------------------------------------------------------------------
+    float hitDist = MAX_DIST;
+    float dist = Plane(rayPos,rayDir);
+    int didhit = 0;
+    if(dist < hitDist && dist > 0.0)
+    {
+        didhit = 1;
+        hitDist = dist;
+    }
+    for(int i = 0; i < sphereNUM; i++){
+        vec3 pos = vec3(sphere_SSBO[0+(i*9)],sphere_SSBO[1+(i*9)],sphere_SSBO[2+(i*9)]);
+        float Radius = sphere_SSBO[3+(i*9)];
+        float dist = Sphere(rayPos,rayDir,pos,Radius);
+        if (dist < hitDist && dist > 0.0) {
+            hitDist = dist;
+            didhit = 1;
+        }
+    }
+    for(int i = 0; i < cubeNUM; i++){
+        vec3 pos = vec3(cube_SSBO[0+(i*14)],cube_SSBO[1+(i*14)],cube_SSBO[2+(i*14)]);
+        vec3 size = vec3(cube_SSBO[3+(i*14)],cube_SSBO[4+(i*14)],cube_SSBO[5+(i*14)]);
+        float dist = Cube(rayPos,rayDir,pos,size);
+        if (dist < hitDist && dist > 0.0) {
+            hitDist = dist;
+            didhit = 1;
+        }
+    }
+    if(didhit == 1) return vec4(oldColour.x/2.0,oldColour.y/2.0,oldColour.z/2.0,1);
+    return oldColour;
 }
 
 void main()
@@ -152,6 +192,9 @@ void main()
 	vec3 col = abs(rayDir.y * down) + abs((1 - rayDir.y) * up) + abs((0.1/rayDir.y) * horizon)+ abs((0.75/rayDir.y + 0.5f) * horizon*0.15);
 	FragColor = vec4(col, 1.0);
     //-----------------------------
-    FragColor = SceneIntersection(rayDir,rayPos,FragColor);
-
+    vec4 sceneParam = SceneIntersection(rayDir,rayPos,FragColor);
+    FragColor.xyz = sceneParam.xyz;
+    rayPos = rayPos+(rayDir*sceneParam.w)+(normal*0.001);
+    rayDir = normalize(sunDir);
+    FragColor = ShadowRays(rayDir,rayPos,FragColor);
 }
