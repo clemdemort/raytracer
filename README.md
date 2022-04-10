@@ -4,7 +4,7 @@ Here is my attempt at a small-ish real time ray-tracer using openGL 4.3. This is
 
 Here is a picture of what the raytracer currently does:
 
-![image](https://user-images.githubusercontent.com/62178977/162618259-1e7ee374-6dc7-43d6-81b9-a6c68f80f021.png)
+file:///home/clement/Pictures/Screenshot_20220410_165858.png
 
 # Compiling on Linux:
 
@@ -39,7 +39,7 @@ finaly in your terminal type in the project directory:
 
 >~~add distance testing~~ DONE
 
->add shadow rays
+>add shadow rays ONGOING PROGRESS...
 
 >add shadow shading
 
@@ -47,5 +47,5 @@ finaly in your terminal type in the project directory:
 
 >add voxel objects
 
->octree implementation on the voxel objects
+>octree implementation on the voxel objects or some form of RLE compression
 
