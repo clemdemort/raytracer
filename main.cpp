@@ -25,7 +25,7 @@ TimeSync Titlesync; //speed at which the screen should be refreshed
 //initialise the camera position
 //------------------------------
 float camX = 0, camY = 10, camZ = -20, rotX = 0, rotY = 0, rotZ = 0, speed = 0, latspeed = 0;
-scene showcase(25,0);
+scene showcase(15,10);
 int main()
 {
     // glfw: initialize and configure
@@ -91,17 +91,29 @@ int main()
     float * spheresarray = new float[showcase.numSpheres*9]; //initializing the array to intercept the data -> it must have the right size.
     showcase.ToSSBOData("GET_SPHERE_DATA",spheresarray);
 
+    float * cubesarray = new float[showcase.numCubes*14]; //initializing the array to intercept the data -> it must have the right size.
+    showcase.ToSSBOData("GET_CUBE_DATA",cubesarray);
+
     //this is how i transfer the content of the different object arrays
     //-----------------------------------------------------------------
 
     //transphering Sphere Data:
     //-------------------------
-    int SarrSize = (4 * showcase.numSpheres*9);
+    int SarrSize = (4 * showcase.numSpheres * 9);
     GLuint SPHssbo;
     glGenBuffers(1, &SPHssbo);
     glBindBuffer(GL_SHADER_STORAGE_BUFFER, SPHssbo);
     glBufferData(GL_SHADER_STORAGE_BUFFER, SarrSize, spheresarray, GL_STATIC_DRAW);
     glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, SPHssbo);
+
+    //transphering Cube Data:
+    //-------------------------
+    SarrSize = (4 * showcase.numSpheres * 14);
+    GLuint CUBssbo;
+    glGenBuffers(1, &CUBssbo);
+    glBindBuffer(GL_SHADER_STORAGE_BUFFER, CUBssbo);
+    glBufferData(GL_SHADER_STORAGE_BUFFER, SarrSize, cubesarray, GL_STATIC_DRAW);
+    glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 2, CUBssbo);
 
     //------------------------------------------------------------
     glUseProgram(0); //clearing any program already linked
@@ -123,7 +135,8 @@ int main()
             renderer.setV3Float("CameraPos",camX,camY,camZ);// spawn on top
             renderer.setV3Float("CameraRot",rotX,rotY,rotZ); //look down
             renderer.setFloat("Time",glfwGetTime());
-            renderer.setInt("sphereNUM",SarrSize/4);
+            renderer.setInt("sphereNUM",showcase.numSpheres);
+            renderer.setInt("cubeNUM",showcase.numCubes);
             renderer.setV3Float("planePos",0,0,0);
             renderer.setV3Float("planeNormal",0,1,0);
             renderer.setV3Float("planeColour",0.75,0.75,0.75);

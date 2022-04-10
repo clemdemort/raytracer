@@ -21,11 +21,33 @@ uniform vec3 planePos;
 uniform vec3 planeColour;
 
 uniform int sphereNUM;
+uniform int cubeNUM;
 
 layout(std430, binding = 1) buffer spheresLayout
 {
     float sphere_SSBO[];
 };
+
+layout(std430, binding = 2) buffer cubesLayout
+{
+    float cube_SSBO[];
+};
+
+//
+float Cube(vec3 rayPos, vec3 rayDir,vec3 pos, vec3 boxSize)
+{
+    vec3 m = 1.0/rayDir; // can precompute if traversing a set of aligned boxes
+    vec3 n = m*(rayPos-pos);   // can precompute if traversing a set of aligned boxes
+    vec3 k = abs(m)*boxSize;
+    vec3 t1 = -n - k;
+    vec3 t2 = -n + k;
+    float tN = max( max( t1.x, t1.y ), t1.z );
+    float tF = min( min( t2.x, t2.y ), t2.z );//    far intersection which we "might" need in the future.
+    if( tN>tF || tF<0.0) return -1.0; // no intersection
+    //Normal = -sign(rayDir)*step(t1.yzx,t1.xyz)*step(t1.zxy,t1.xyz);   Normal of the intersection we will need this but not yet
+    return tN;
+}
+
 //ray sphere collision
 float Sphere(vec3 rayPos,vec3 rayDir, vec3 pos, float Radius )
 {
@@ -92,6 +114,16 @@ vec4 SceneIntersection(vec3 rayDir, vec3 rayPos,vec4 BGColour)
             hitDist = dist;
             //vec3 N = unit_vector(vec3((rayPos + t*rayDir) - vec3(0,0,-1)));
             hitcolour = vec4(sphere_SSBO[4+(i*9)],sphere_SSBO[5+(i*9)],sphere_SSBO[6+(i*9)],1);
+        }
+    }
+    for(int i = 0; i < cubeNUM; i++){
+        vec3 pos = vec3(cube_SSBO[0+(i*14)],sphere_SSBO[1+(i*14)],sphere_SSBO[2+(i*14)]);
+        vec3 size = vec3(cube_SSBO[3+(i*14)],sphere_SSBO[4+(i*14)],sphere_SSBO[5+(i*14)]);
+        float dist = Cube(rayPos,rayDir,pos,size);
+        if (dist < hitDist && dist > 0.0) {
+            hitDist = dist;
+            //vec3 N = unit_vector(vec3((rayPos + t*rayDir) - vec3(0,0,-1)));
+            hitcolour = vec4(cube_SSBO[9+(i*14)],cube_SSBO[10+(i*14)],cube_SSBO[11+(i*14)],1);
         }
     }
     return hitcolour;

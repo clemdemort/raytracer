@@ -79,6 +79,23 @@ public:
             spherelist[i].transparency  = getrand(0,255)/255.0;     //these last two wont do much as of yet but they will play a key role in the future
             spherelist[i].roughthness   = getrand(0,255)/255.0;
         }
+        for(int i = 0; i < numofCubes; i++)
+        {
+            cubelist[i].PosX = getrand(minPosX*100.0,maxPosX*100.0)/100;        //we want a bit more floating point precision
+            cubelist[i].PosY = getrand(minPosY*100.0,maxPosY*100.0)/100;
+            cubelist[i].PosZ = getrand(minPosZ*100.0,maxPosZ*100.0)/100;
+            cubelist[i].SizeX = getrand(minSize*100.0,maxSize*100.0)/100;
+            cubelist[i].SizeY = getrand(minSize*100.0,maxSize*100.0)/100;
+            cubelist[i].SizeZ = getrand(minSize*100.0,maxSize*100.0)/100;
+            cubelist[i].RotX = 0;
+            cubelist[i].RotY = 0;
+            cubelist[i].RotZ = 0;
+            cubelist[i].colourRED     = getrand(0,255)/255.0;
+            cubelist[i].colourGREEN   = getrand(0,255)/255.0;
+            cubelist[i].colourBLUE    = getrand(0,255)/255.0;
+            cubelist[i].transparency  = getrand(0,255)/255.0;
+            cubelist[i].roughthness   = getrand(0,255)/255.0;
+        }
     }
     void ToSSBOData(std::string param,float *& data)
     {
