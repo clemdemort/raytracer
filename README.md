@@ -4,7 +4,7 @@ Here is my attempt at a small-ish real time ray-tracer using openGL 4.3. This is
 
 Here is a picture of what the raytracer currently does:
 
-![image](https://user-images.githubusercontent.com/62178977/162611573-1e7c0c1b-74bd-4f44-af7d-c199a4c83132.png)
+![image](https://user-images.githubusercontent.com/62178977/162613536-86b2bd86-ad8e-414e-a1ee-f606f11b088b.png)
 
 # Compiling on Linux:
 
@@ -35,7 +35,7 @@ finaly in your terminal type in the project directory:
 
 # To-Do list:
 
->add cubes
+>~~add cubes~~ DONE
 
 >~~add distance testing~~ DONE
 
