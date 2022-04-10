@@ -2,9 +2,9 @@
 
 Here is my attempt at a small-ish real time ray-tracer using openGL 4.3. This is obviously not done so expect some progress in the comming weeks/months to this project.
 
-Here is a picture of what the raytacer currently does:
+Here is a picture of what the raytracer currently does:
 
-![raytracerGithub2](https://user-images.githubusercontent.com/62178977/158424441-ac164b57-6385-4b64-8cf1-2eeeeec5ebb2.png)
+![image](https://user-images.githubusercontent.com/62178977/162611573-1e7c0c1b-74bd-4f44-af7d-c199a4c83132.png)
 
 # Compiling on Linux:
 
@@ -37,7 +37,7 @@ finaly in your terminal type in the project directory:
 
 >add cubes
 
->add distance testing
+>~~add distance testing~~
 
 >add shadow rays
 
