@@ -37,7 +37,7 @@ finaly in your terminal type in the project directory:
 
 >add cubes
 
->~~add distance testing~~
+>~~add distance testing~~ DONE
 
 >add shadow rays
 
