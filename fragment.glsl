@@ -40,7 +40,7 @@ float Sphere(vec3 rayPos,vec3 rayDir, vec3 pos, float Radius )
 
 //ray plane intersection
 float Plane(vec3 rayPos,vec3 rayDir) {
-    return -(dot(rayPos,planeNormal.xyz)+sin(Time))/dot(rayDir,planeNormal.xyz);
+    return -(dot(rayPos,planeNormal.xyz))/dot(rayDir,planeNormal.xyz);
 }
 
 vec3 unit_vector(vec3 v) {
@@ -72,6 +72,30 @@ vec3 rotate3d(vec3 v, float a, float b) {
 	return v*rotationA*rotationB;
 }
 
+vec4 SceneIntersection(vec3 rayDir, vec3 rayPos,vec4 BGColour)
+{
+    //this part will try to work out the colour of the ray by colliding it with the objects in the scene
+    //--------------------------------------------------------------------------------------------------
+    float hitDist = MAX_DIST;
+    float dist = Plane(rayPos,rayDir);
+    vec4 hitcolour = BGColour;
+    if(dist < hitDist && dist > 0.0)
+    {
+        hitcolour = vec4(planeColour,1);
+        hitDist = dist;
+    }
+    for(int i = 0; i < sphereNUM; i++){
+        vec3 pos = vec3(sphere_SSBO[0+(i*9)],sphere_SSBO[1+(i*9)],sphere_SSBO[2+(i*9)]);
+        float Radius = sphere_SSBO[3+(i*9)];
+        float dist = Sphere(rayPos,rayDir,pos,Radius);
+        if (dist < hitDist && dist > 0.0) {
+            hitDist = dist;
+            //vec3 N = unit_vector(vec3((rayPos + t*rayDir) - vec3(0,0,-1)));
+            hitcolour = vec4(sphere_SSBO[4+(i*9)],sphere_SSBO[5+(i*9)],sphere_SSBO[6+(i*9)],1);
+        }
+    }
+    return hitcolour;
+}
 
 void main()
 {
@@ -93,25 +117,6 @@ void main()
 	vec3 col = abs(rayDir.y * down) + abs((1 - rayDir.y) * up) + abs((0.1/rayDir.y) * horizon)+ abs((0.75/rayDir.y + 0.5f) * horizon*0.15);
 	FragColor = vec4(col, 1.0);
     //-----------------------------
+    FragColor = SceneIntersection(rayDir,rayPos,FragColor);
 
-    //this part will try to work out the colour of the ray by colliding it with the objects in the scene
-    //--------------------------------------------------------------------------------------------------
-    float hitDist = 100000.0;
-
-    float dist = Plane(rayPos,rayDir);
-    if(dist < hitDist && dist > 0.0)
-    {
-        FragColor = vec4(planeColour,1);
-        hitDist = dist;
-    }
-    for(int i = 0; i < sphereNUM; i++){
-        vec3 pos = vec3(sphere_SSBO[0+(i*9)],sphere_SSBO[1+(i*9)],sphere_SSBO[2+(i*9)]);
-        float Radius = sphere_SSBO[3+(i*9)];
-        float dist = Sphere(rayPos,rayDir,pos,Radius);
-        if (dist < hitDist && dist > 0.0) {
-            hitDist = dist;
-            //vec3 N = unit_vector(vec3((rayPos + t*rayDir) - vec3(0,0,-1)));
-            FragColor = vec4(sphere_SSBO[4+(i*9)],sphere_SSBO[5+(i*9)],sphere_SSBO[6+(i*9)],1);
-        }
-    }
 }
