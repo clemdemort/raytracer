@@ -25,7 +25,7 @@ TimeSync Titlesync; //speed at which the screen should be refreshed
 //initialise the camera position
 //------------------------------
 float camX = 0, camY = 10, camZ = -20, rotX = 0, rotY = 0, rotZ = 0, speed = 0, latspeed = 0;
-scene showcase(15,10);
+scene showcase(100,100);
 int main()
 {
     // glfw: initialize and configure
@@ -108,7 +108,7 @@ int main()
 
     //transphering Cube Data:
     //-------------------------
-    SarrSize = (4 * showcase.numSpheres * 14);
+    SarrSize = (4 * showcase.numCubes * 14);
     GLuint CUBssbo;
     glGenBuffers(1, &CUBssbo);
     glBindBuffer(GL_SHADER_STORAGE_BUFFER, CUBssbo);
