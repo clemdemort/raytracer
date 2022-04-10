@@ -1,6 +1,16 @@
+/*
+                        Raytracing shader
+    - object detection
+        float distance = detecthing(parameters ex; pos,rot,size)
+*/
+
 #version 430 core
+//parameters
 out vec4 FragColor;
 in vec2 FragCoord;
+//constants
+float MAX_DIST = 1e10;
+
 uniform vec3 CameraPos;
 uniform vec3 CameraRot;
 uniform vec2 iResolution;
@@ -17,35 +27,20 @@ layout(std430, binding = 1) buffer spheresLayout
     float sphere_SSBO[];
 };
 //ray sphere collision
-float hit_sphere(int IDX,vec3 rayPos, vec3 rayDir) {
-
-    vec3 pos = vec3(sphere_SSBO[0+(IDX*9)],sphere_SSBO[1+(IDX*9)],sphere_SSBO[2+(IDX*9)]);
-    float Radius = sphere_SSBO[3+(IDX*9)];
-
+float Sphere(vec3 rayPos,vec3 rayDir, vec3 pos, float Radius )
+{
     vec3 oc = rayPos - pos;
-    float a = dot(rayDir, rayDir);
-    float b = 2.0 * dot(oc, rayDir);
-    float c = dot(oc, oc) - Radius*Radius;
-    float discriminant = b*b - 4*a*c;
-    if (discriminant < 0) {
-        //ray doesn't intersect with the ball
-        return -1.0;
-    } else {
-        return (-b - sqrt(discriminant) ) / (2.0*a);
-    }
+    float b = dot( oc, rayDir );
+    float c = dot( oc, oc ) - Radius*Radius;
+    float h = b*b - c;
+    if( h<0.0 ) return -1.0; // no intersection
+    h = sqrt( h );
+    return -b-h;    //we take the closest intersection the furthest would be -b+h
 }
 
-float hit_plane(vec3 rayPos, vec3 rayDir)
-{
-    float t;
-    float denom = dot(planeNormal, rayDir);
-    if (denom < 1e-6) {
-        vec3 discriminant = planePos - rayPos;
-        t = dot(discriminant, planeNormal) / denom;
-        return t;
-    }
-    //ray doesnt intersect with plane
-    return -1.0;
+//ray plane intersection
+float Plane(vec3 rayPos,vec3 rayDir) {
+    return -(dot(rayPos,planeNormal.xyz)+sin(Time))/dot(rayDir,planeNormal.xyz);
 }
 
 vec3 unit_vector(vec3 v) {
@@ -88,7 +83,7 @@ void main()
 	vec3 cameraPlaneV = vec3(0.0, 1.0, 0.0);
 	vec3 rayDir = cameraDir + screenPos.x * cameraPlaneU + screenPos.y * cameraPlaneV;
 	vec3 rayPos = CameraPos;
-	rayDir = rotate3d(rayDir,CameraRot.y,CameraRot.x);
+	rayDir = normalize(rotate3d(rayDir,CameraRot.y,CameraRot.x));
 
 	//coding the sky
 	//--------------
@@ -101,16 +96,21 @@ void main()
 
     //this part will try to work out the colour of the ray by colliding it with the objects in the scene
     //--------------------------------------------------------------------------------------------------
+    float hitDist = 100000.0;
 
-    float t = hit_plane(rayPos,rayDir);
-    if(t > 0.0)
+    float dist = Plane(rayPos,rayDir);
+    if(dist < hitDist && dist > 0.0)
     {
         FragColor = vec4(planeColour,1);
+        hitDist = dist;
     }
     for(int i = 0; i < sphereNUM; i++){
-        t = hit_sphere(i,rayPos,rayDir);
-        if (t > 0.0) {
-            vec3 N = unit_vector(vec3((rayPos + t*rayDir) - vec3(0,0,-1)));
+        vec3 pos = vec3(sphere_SSBO[0+(i*9)],sphere_SSBO[1+(i*9)],sphere_SSBO[2+(i*9)]);
+        float Radius = sphere_SSBO[3+(i*9)];
+        float dist = Sphere(rayPos,rayDir,pos,Radius);
+        if (dist < hitDist && dist > 0.0) {
+            hitDist = dist;
+            //vec3 N = unit_vector(vec3((rayPos + t*rayDir) - vec3(0,0,-1)));
             FragColor = vec4(sphere_SSBO[4+(i*9)],sphere_SSBO[5+(i*9)],sphere_SSBO[6+(i*9)],1);
         }
     }
