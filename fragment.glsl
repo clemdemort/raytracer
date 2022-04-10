@@ -2,6 +2,9 @@
                         Raytracing shader
     - object detection
         float distance = detecthing(parameters ex; pos,rot,size)
+        if(otherintersectiondistance < actual distance)
+            change colour to that of this object
+            actual distance = otherintersectiondistance
 */
 
 #version 430 core
@@ -9,7 +12,7 @@
 out vec4 FragColor;
 in vec2 FragCoord;
 //constants
-float MAX_DIST = 1e10;
+float MAX_DIST = 10000000;
 
 uniform vec3 CameraPos;
 uniform vec3 CameraRot;
@@ -117,8 +120,8 @@ vec4 SceneIntersection(vec3 rayDir, vec3 rayPos,vec4 BGColour)
         }
     }
     for(int i = 0; i < cubeNUM; i++){
-        vec3 pos = vec3(cube_SSBO[0+(i*14)],sphere_SSBO[1+(i*14)],sphere_SSBO[2+(i*14)]);
-        vec3 size = vec3(cube_SSBO[3+(i*14)],sphere_SSBO[4+(i*14)],sphere_SSBO[5+(i*14)]);
+        vec3 pos = vec3(cube_SSBO[0+(i*14)],cube_SSBO[1+(i*14)],cube_SSBO[2+(i*14)]);
+        vec3 size = vec3(cube_SSBO[3+(i*14)],cube_SSBO[4+(i*14)],cube_SSBO[5+(i*14)]);
         float dist = Cube(rayPos,rayDir,pos,size);
         if (dist < hitDist && dist > 0.0) {
             hitDist = dist;
