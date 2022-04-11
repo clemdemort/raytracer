@@ -14,12 +14,15 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void processInput(GLFWwindow *window);
 void ShowFPS(GLFWwindow * window,std::string title, float ElapsedTime,float HOW_MANY_TIMES_A_SECOND);
 
+//Debugging
+int getNormals = 0;
+
 // settings
 int SCR_WIDTH = 800;
 int SCR_HEIGHT = 600;
 
 TimeSync Vsync; //video sync
-TimeSync Titlesync; //speed at which the screen should be refreshed
+TimeSync Titlesync; //speed at which the title should be refreshed
 
 
 //initialise the camera position
@@ -67,6 +70,7 @@ int main()
 
     // set up vertex data (and buffer(s)) and configure vertex attributes
     // ------------------------------------------------------------------
+    //the triangle is going to act as a canvas for everything we render un=sing the fragment shader
     float vertices[] = {
         // positions
          3.0f, -1.0f, 0.0f,  // bottom right
@@ -77,7 +81,7 @@ int main()
     unsigned int VBO, VAO;
     glGenVertexArrays(1, &VAO);
     glGenBuffers(1, &VBO);
-    // bind the Vertex Array Object first, then bind and set vertex buffer(s), and then configure vertex attributes(s).
+    // bind the Vertex Array Object first, then bind and set vertex buffer, and then configure vertex attributes.
     glBindVertexArray(VAO);
 
     glBindBuffer(GL_ARRAY_BUFFER, VBO);
@@ -131,13 +135,13 @@ int main()
             processInput(window);
             glfwGetWindowSize(window,&SCR_WIDTH, &SCR_HEIGHT);
             renderer.setV2Float("iResolution",SCR_WIDTH,SCR_HEIGHT);
-            //top down view
-            renderer.setV3Float("CameraPos",camX,camY,camZ);// spawn on top
-            renderer.setV3Float("CameraRot",rotX,rotY,rotZ); //look down
+            renderer.setV3Float("CameraPos",camX,camY,camZ);
+            renderer.setV3Float("CameraRot",rotX,rotY,rotZ);
             renderer.setFloat("Time",glfwGetTime());
             renderer.setInt("sphereNUM",showcase.numSpheres);
             renderer.setInt("cubeNUM",showcase.numCubes);
-            renderer.setV3Float("sunDir",cos(glfwGetTime()/100.0),1,sin(glfwGetTime()/100.0));
+            renderer.setInt("getNormals",getNormals);
+            renderer.setV3Float("sunDir",cos(glfwGetTime()/100.0),1+sin(-glfwGetTime()/100.0),sin(glfwGetTime()/100.0));
             renderer.setV3Float("planePos",0,0,0);
             renderer.setV3Float("planeNormal",0,1,0);
             renderer.setV3Float("planeColour",0.75,0.75,0.75);
@@ -215,7 +219,6 @@ void processInput(GLFWwindow *window)
             force *= force/2.0f;
         latspeed += force * Vsync.ElapsedTime;
     }
-    //if(abs(latspeed) < 10)rotZ = -latspeed / 70;
 
     camX += Vsync.ElapsedTime * latspeed * sin(rotX + PI / 2);
     camZ += Vsync.ElapsedTime * latspeed * cos(rotX + PI / 2);
@@ -232,6 +235,15 @@ void processInput(GLFWwindow *window)
     else {
         glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
     }
+
+
+    if (glfwGetKey(window, GLFW_KEY_N) == GLFW_PRESS)
+    {
+        getNormals = 1;
+    }
+    else {
+        getNormals = 0;
+    }
 }
 
 // glfw: whenever the window size changed (by OS or user resize) this callback function executes
@@ -245,7 +257,6 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height)
 void ShowFPS(GLFWwindow * window,std::string title, float ElapsedTime,float HOW_MANY_TIMES_A_SECOND)
 {
     if (Titlesync.Sync(HOW_MANY_TIMES_A_SECOND)) {
-                //below you can set the window title
                 std::stringstream ss;
                 ss << int(1.0 / ElapsedTime);
                 std::string temp = ss.str();

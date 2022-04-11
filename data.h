@@ -52,15 +52,15 @@ public:
 
         //1st we will generate the spheres
         //to do so we need to set mins and max for positions and Size
-        float maxPosX = 100;
-        float minPosX = -100;
-        float maxPosY = 200;
+        float maxPosX = 500;
+        float minPosX = -500;
+        float maxPosY = 50;
         float minPosY = 0;
-        float maxPosZ = 100;
-        float minPosZ = -100;
+        float maxPosZ = 500;
+        float minPosZ = -500;
 
         float minSize = 1;
-        float maxSize = 5;
+        float maxSize = 20;
 
         //initialising the random seed
         srand(time(NULL));

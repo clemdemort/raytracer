@@ -1,9 +1,10 @@
 /*
                         Raytracing shader
     - object detection
-        float distance = detecthing(parameters ex; pos,rot,size)
+        distance(+normal) = detecthing(parameters ex; pos,rot,size)
         if(otherintersectiondistance < actual distance)
             change colour to that of this object
+            setS the normal of this pixel/ray
             actual distance = otherintersectiondistance
 */
 
@@ -13,19 +14,17 @@ out vec4 FragColor;
 in vec2 FragCoord;
 //constants
 float MAX_DIST = 10000000;
-
+float bias = 0.0001;        //too small = shadow acne , too big = inacurate shadows.
 uniform vec3 CameraPos;
 uniform vec3 CameraRot;
 uniform vec2 iResolution;
 uniform float Time;
-
-uniform vec3 planeNormal;
+uniform vec3 planeNormal;   //the plane is passed as a uniform because who needs more than one anyways????
 uniform vec3 planePos;
 uniform vec3 planeColour;
-
 uniform vec3 sunDir;
-
-uniform int sphereNUM;
+uniform int getNormals;     //debuggingstuff
+uniform int sphereNUM;      //variables to interract with the SSBOs
 uniform int cubeNUM;
 
 //global variables
@@ -42,8 +41,8 @@ layout(std430, binding = 2) buffer cubesLayout
     float cube_SSBO[];
 };
 
-//
-float Cube(vec3 rayPos, vec3 rayDir,vec3 pos, vec3 boxSize)
+//ray cube intersection
+vec4 Cube(vec3 rayPos, vec3 rayDir,vec3 pos, vec3 boxSize)
 {
     vec3 m = 1.0/rayDir; // can precompute if traversing a set of aligned boxes
     vec3 n = m*(rayPos-pos);   // can precompute if traversing a set of aligned boxes
@@ -52,9 +51,9 @@ float Cube(vec3 rayPos, vec3 rayDir,vec3 pos, vec3 boxSize)
     vec3 t2 = -n + k;
     float tN = max( max( t1.x, t1.y ), t1.z );
     float tF = min( min( t2.x, t2.y ), t2.z );//    far intersection which we "might" need in the future.
-    if( tN>=tF || tF<0.0) return -1.0; // no intersection
-    normal = -sign(rayDir)*step(t1.yzx,t1.xyz)*step(t1.zxy,t1.xyz);
-    return tN;
+    if( tN>=tF || tF<0.0) return vec4(-1.0); // no intersection
+    vec3 normal = -sign(rayDir)*step(t1.yzx,t1.xyz)*step(t1.zxy,t1.xyz);
+    return vec4(tN,normal);
 }
 
 //ray sphere collision
@@ -123,15 +122,16 @@ vec4 SceneIntersection(vec3 rayDir, vec3 rayPos,vec4 BGColour)
         if (dist < hitDist && dist > 0.0) {
             hitDist = dist;
             hitcolour = vec4(sphere_SSBO[4+(i*9)],sphere_SSBO[5+(i*9)],sphere_SSBO[6+(i*9)],1);
-            normal = normalize(rayPos+(rayDir*dist) + pos);
+            normal = normalize(rayPos+(rayDir*dist) - pos);
         }
     }
     for(int i = 0; i < cubeNUM; i++){
         vec3 pos = vec3(cube_SSBO[0+(i*14)],cube_SSBO[1+(i*14)],cube_SSBO[2+(i*14)]);
         vec3 size = vec3(cube_SSBO[3+(i*14)],cube_SSBO[4+(i*14)],cube_SSBO[5+(i*14)]);
-        float dist = Cube(rayPos,rayDir,pos,size);
-        if (dist < hitDist && dist > 0.0) {
-            hitDist = dist;
+        vec4 param = Cube(rayPos,rayDir,pos,size);
+        if (param.x < hitDist && param.x > 0.0) {
+            hitDist = param.x;
+            normal = param.yzw;
             hitcolour = vec4(cube_SSBO[9+(i*14)],cube_SSBO[10+(i*14)],cube_SSBO[11+(i*14)],1);
         }
     }
@@ -140,8 +140,8 @@ vec4 SceneIntersection(vec3 rayDir, vec3 rayPos,vec4 BGColour)
 }
 vec4 ShadowRays(vec3 rayDir, vec3 rayPos,vec4 oldColour)
 {
-    //this part will try to work out the colour of the ray by colliding it with the objects in the scene
-    //--------------------------------------------------------------------------------------------------
+    //this part will collide yet another time with the scene to determine the shadows
+    //-------------------------------------------------------------------------------
     float hitDist = MAX_DIST;
     float dist = Plane(rayPos,rayDir);
     int didhit = 0;
@@ -162,7 +162,7 @@ vec4 ShadowRays(vec3 rayDir, vec3 rayPos,vec4 oldColour)
     for(int i = 0; i < cubeNUM; i++){
         vec3 pos = vec3(cube_SSBO[0+(i*14)],cube_SSBO[1+(i*14)],cube_SSBO[2+(i*14)]);
         vec3 size = vec3(cube_SSBO[3+(i*14)],cube_SSBO[4+(i*14)],cube_SSBO[5+(i*14)]);
-        float dist = Cube(rayPos,rayDir,pos,size);
+        float dist = Cube(rayPos,rayDir,pos,size).x;
         if (dist < hitDist && dist > 0.0) {
             hitDist = dist;
             didhit = 1;
@@ -191,10 +191,18 @@ void main()
 	vec3 down = vec3(0.05,0.05,0.15);
 	vec3 col = abs(rayDir.y * down) + abs((1 - rayDir.y) * up) + abs((0.1/rayDir.y) * horizon)+ abs((0.75/rayDir.y + 0.5f) * horizon*0.15);
 	FragColor = vec4(col, 1.0);
+	//coding the sun
+
+	col = vec3(1,1,0.3);   //will be the colour of the sun
+	//FragColor.xyz += sunDir.x-rayDir.x + sunDir.x-rayDir.x+sunDir.-rayDir.z*col;
     //-----------------------------
     vec4 sceneParam = SceneIntersection(rayDir,rayPos,FragColor);
     FragColor.xyz = sceneParam.xyz;
-    rayPos = rayPos+(rayDir*sceneParam.w)+(normal*0.001);
-    rayDir = normalize(sunDir);
-    FragColor = ShadowRays(rayDir,rayPos,FragColor);
+    if(getNormals == 1){                //to help us visualize normals
+        FragColor.xyz = (1+normal.xyz)*0.5;
+    }else{                              //if we are visualizing normals we arent interested in shadows.
+        rayPos = rayPos+(rayDir*sceneParam.w)+(normal*bias*sceneParam.w); //we need some variable bias to prevent "shadow acne"
+        rayDir = normalize(sunDir);
+        FragColor = ShadowRays(rayDir,rayPos,FragColor);
+    }
 }
