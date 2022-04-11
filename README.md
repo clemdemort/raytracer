@@ -4,7 +4,7 @@ Here is my attempt at a small-ish real time ray-tracer using openGL 4.3. This is
 
 Here is a picture of what the raytracer currently does:
 
-![image](https://user-images.githubusercontent.com/62178977/162751845-a23eda26-8eac-492d-9bde-6f386b228b87.png)
+![image](https://user-images.githubusercontent.com/62178977/162773129-0a68b9e1-c5ed-4c89-b130-f97e9d84977f.png)
 
 # Compiling on Linux:
 
@@ -43,7 +43,7 @@ finaly in your terminal type in the project directory:
 
 >~~add shadow rays~~ DONE
 
->add shadow shading
+>~~add shadow shading~~ DONE
 
 >set up acceleration structure
 
