@@ -12,7 +12,7 @@ the Compilation of this project is quite easy on linux:
 First off, download the package for "glfw3" and any that might be missing (see compilation command): 
 
 second off, install my configuration of glad which you can find here:
-> https://glad.dav1d.de/generated/tmp7s7wppfaglad/
+> https://glad.dav1d.de/#language=c&specification=gl&api=gl%3D4.3&api=gles1%3Dnone&api=gles2%3Dnone&api=glsc2%3Dnone&profile=compatibility&loader=on
 
 finaly in your terminal type in the project directory:
 > g++ main.cpp glad/glad.c -lglfw -lGL -lX11 -lpthread -lXrandr -lXi -ldl -o executable
