@@ -52,12 +52,12 @@ public:
 
         //1st we will generate the spheres
         //to do so we need to set mins and max for positions and Size
-        float maxPosX = 500;
-        float minPosX = -500;
+        float maxPosX = 400;
+        float minPosX = -400;
         float maxPosY = 50;
         float minPosY = 0;
-        float maxPosZ = 500;
-        float minPosZ = -500;
+        float maxPosZ = 400;
+        float minPosZ = -400;
 
         float minSize = 1;
         float maxSize = 20;

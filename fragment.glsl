@@ -113,7 +113,12 @@ vec4 SceneIntersection(vec3 rayDir, vec3 rayPos,vec4 BGColour)
     vec4 hitcolour = BGColour;
     if(dist < hitDist && dist > 0.0)
     {
-        hitcolour = vec4(planeColour,1);
+        vec3 checkers = (dist*rayDir+rayPos)/50;
+        if(int(checkers.x+MAX_DIST) % 2 == int(checkers.z+MAX_DIST) % 2 ){
+            hitcolour = vec4(planeColour,1);
+        }else{
+            hitcolour = vec4(planeColour,1)*0.5;
+        }
         hitDist = dist;
         normal = planeNormal;
     }
@@ -170,7 +175,7 @@ vec4 ShadowRays(vec3 rayDir, vec3 rayPos,vec4 oldColour)
             didhit = 1;
         }
     }
-    if(didhit == 1) return vec4(oldColour.x/2.0,oldColour.y/2.0,oldColour.z/2.0,1);
+    if(didhit == 1) return vec4(oldColour.x,oldColour.y,oldColour.z,1)/4.0;
     return oldColour;
 }
 
@@ -195,11 +200,15 @@ void main()
 	FragColor = vec4(col, 1.0)/4.0;
 	//coding the sun
     normal = sunDir;       //this is done otherwise the sky would be black if we use it in a normal calculation
+    float tsun = Sphere(vec3(0),rayDir,(sunDir*100),3);
 	col = vec3(1,1,0.3);   //will be the colour of the sun
-	//FragColor.xyz += sunDir.x-rayDir.x + sunDir.x-rayDir.x+sunDir.-rayDir.z*col; //this is something i want to test out in the future
+    if (tsun>0.0){
+        FragColor.xyz = col;
+        }
+
     //-----------------------------
     vec4 sceneParam = SceneIntersection(rayDir,rayPos,FragColor);
-    FragColor.xyz = sceneParam.xyz/**(3+dot(rayDir,sunDir))/4*/;
+    FragColor.xyz = sceneParam.xyz;
     if(getNormals == 1){                //to help us visualize normals
         FragColor.xyz = (1+normal.xyz)*0.5;
     }else{                              //if we are visualizing normals we arent interested in shadows.
