@@ -3,8 +3,7 @@
 Here is my attempt at a small-ish real time ray-tracer using openGL 4.3. This is obviously not done so expect some progress in the comming weeks/months to this project.
 
 Here is a picture of what the raytracer currently does:
-
-![image](https://user-images.githubusercontent.com/62178977/162773129-0a68b9e1-c5ed-4c89-b130-f97e9d84977f.png)
+![image](https://user-images.githubusercontent.com/62178977/162789246-bd803e01-73f3-41ff-8927-6ea9204d446d.png)
 
 # Compiling on Linux:
 
