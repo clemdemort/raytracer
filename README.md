@@ -4,7 +4,7 @@ Here is my attempt at a small-ish real time ray-tracer using openGL 4.3. This is
 
 Here is a picture of what the raytracer currently does:
 
-![Screenshot_20220410_165858](https://user-images.githubusercontent.com/62178977/162626323-d90fde8b-6893-479f-9b44-b6ca316e358e.png)
+![image](https://user-images.githubusercontent.com/62178977/162751845-a23eda26-8eac-492d-9bde-6f386b228b87.png)
 
 # Compiling on Linux:
 
@@ -29,6 +29,8 @@ finaly in your terminal type in the project directory:
 
 > D : Right motion
 
+> N : Visualize normals
+
 > TAB : Free Mouse
 
 > EXIT: exit the application
@@ -39,7 +41,7 @@ finaly in your terminal type in the project directory:
 
 >~~add distance testing~~ DONE
 
->add shadow rays ONGOING PROGRESS...
+>~~add shadow rays~~ DONE
 
 >add shadow shading
 
