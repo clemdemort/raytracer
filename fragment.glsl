@@ -32,6 +32,7 @@ uniform int cubeNUM;
 //global variables
 
 vec3 normal;
+float HDistance;
 
 layout(std430, binding = 1) buffer spheresLayout
 {
@@ -104,31 +105,34 @@ vec3 rotate3d(vec3 v, float a, float b) {
 	return v*rotationA*rotationB;
 }
 
-vec4 SceneIntersection(vec3 rayDir, vec3 rayPos,vec4 BGColour)
+
+vec4 renderPass(vec3 rayDir, vec3 rayPos,vec4 oldColour)
 {
-    //this part will try to work out the colour of the ray by colliding it with the objects in the scene
+    //this part will try to work out the properties of the ray by colliding it with the objects in the scene
     //--------------------------------------------------------------------------------------------------
-    float hitDist = MAX_DIST;
+    HDistance = MAX_DIST;
+    //rayprop: vec3(R,G,B), float(did_the_ray_hit?)->1 = it did hit -> -1 = it didn't.
+    vec4 rayProp = vec4(oldColour.xyz,-1); //the ray didn't hit anything yet so rayprop.z = -1;
+    //ray plane SceneIntersection
     float dist = Plane(rayPos,rayDir);
-    vec4 hitcolour = BGColour;
-    if(dist < hitDist && dist > 0.0)
+    if(dist < HDistance && dist > 0.0)
     {
         vec3 checkers = (dist*rayDir+rayPos)/50;
         if(int(checkers.x+MAX_DIST) % 2 == int(checkers.z+MAX_DIST) % 2 ){
-            hitcolour = vec4(planeColour,1);
+            rayProp = vec4(planeColour,1);
         }else{
-            hitcolour = vec4(planeColour,1)*0.5;
+            rayProp = vec4(planeColour*0.5,1);
         }
-        hitDist = dist;
+        HDistance = dist;
         normal = planeNormal;
     }
     for(int i = 0; i < sphereNUM; i++){
         vec3 pos = vec3(sphere_SSBO[0+(i*9)],sphere_SSBO[1+(i*9)],sphere_SSBO[2+(i*9)]);
         float Radius = sphere_SSBO[3+(i*9)];
         float dist = Sphere(rayPos,rayDir,pos,Radius);
-        if (dist < hitDist && dist > 0.0) {
-            hitDist = dist;
-            hitcolour = vec4(sphere_SSBO[4+(i*9)],sphere_SSBO[5+(i*9)],sphere_SSBO[6+(i*9)],1);
+        if (dist < HDistance && dist > 0.0) {
+            HDistance = dist;
+            rayProp = vec4(sphere_SSBO[4+(i*9)],sphere_SSBO[5+(i*9)],sphere_SSBO[6+(i*9)],1);
             normal = normalize(rayPos+(rayDir*dist) - pos);
         }
     }
@@ -136,48 +140,33 @@ vec4 SceneIntersection(vec3 rayDir, vec3 rayPos,vec4 BGColour)
         vec3 pos = vec3(cube_SSBO[0+(i*14)],cube_SSBO[1+(i*14)],cube_SSBO[2+(i*14)]);
         vec3 size = vec3(cube_SSBO[3+(i*14)],cube_SSBO[4+(i*14)],cube_SSBO[5+(i*14)]);
         vec4 param = Cube(rayPos,rayDir,pos,size);
-        if (param.x < hitDist && param.x > 0.0) {
-            hitDist = param.x;
+        if (param.x < HDistance && param.x > 0.0) {
+            HDistance = param.x;
             normal = param.yzw;
-            hitcolour = vec4(cube_SSBO[9+(i*14)],cube_SSBO[10+(i*14)],cube_SSBO[11+(i*14)],1);
+            rayProp = vec4(cube_SSBO[9+(i*14)],cube_SSBO[10+(i*14)],cube_SSBO[11+(i*14)],1);
         }
     }
-    hitcolour.w = hitDist;
-    return hitcolour;
+    return rayProp;
+}
+
+vec3 SceneIntersection(vec3 rayDir, vec3 rayPos,vec4 BGColour)
+{
+    vec4 rayCol = renderPass(rayDir,rayPos,BGColour);
+    if(rayCol.w > 0) return rayCol.xyz;
 }
 vec4 ShadowRays(vec3 rayDir, vec3 rayPos,vec4 oldColour)
 {
     //this part will collide yet another time with the scene to determine the shadows
     //-------------------------------------------------------------------------------
-    float hitDist = MAX_DIST;
-    float dist = Plane(rayPos,rayDir);
-    int didhit = 0;
-    if(dist < hitDist && dist > 0.0)
+    vec3 temp = normal;//otherwise we would have 3D shadows which while cool arent realistic XD
+    if(renderPass(rayDir,rayPos,oldColour).w == 1)
     {
-        didhit = 1;
-        hitDist = dist;
+        normal = temp;
+        return vec4(oldColour.x,oldColour.y,oldColour.z,4)/4.0;
     }
-    for(int i = 0; i < sphereNUM; i++){
-        vec3 pos = vec3(sphere_SSBO[0+(i*9)],sphere_SSBO[1+(i*9)],sphere_SSBO[2+(i*9)]);
-        float Radius = sphere_SSBO[3+(i*9)];
-        float dist = Sphere(rayPos,rayDir,pos,Radius);
-        if (dist < hitDist && dist > 0.0) {
-            hitDist = dist;
-            didhit = 1;
-        }
-    }
-    for(int i = 0; i < cubeNUM; i++){
-        vec3 pos = vec3(cube_SSBO[0+(i*14)],cube_SSBO[1+(i*14)],cube_SSBO[2+(i*14)]);
-        vec3 size = vec3(cube_SSBO[3+(i*14)],cube_SSBO[4+(i*14)],cube_SSBO[5+(i*14)]);
-        float dist = Cube(rayPos,rayDir,pos,size).x;
-        if (dist < hitDist && dist > 0.0) {
-            hitDist = dist;
-            didhit = 1;
-        }
-    }
-    if(didhit == 1) return vec4(oldColour.x,oldColour.y,oldColour.z,1)/4.0;
     return oldColour;
 }
+
 
 void main()
 {
@@ -207,13 +196,14 @@ void main()
         }
 
     //-----------------------------
-    vec4 sceneParam = SceneIntersection(rayDir,rayPos,FragColor);
-    FragColor.xyz = sceneParam.xyz;
+    vec3 sceneParam = SceneIntersection(rayDir,rayPos,FragColor);
+    FragColor.xyz = sceneParam;
     if(getNormals == 1){                //to help us visualize normals
         FragColor.xyz = (1+normal.xyz)*0.5;
     }else{                              //if we are visualizing normals we arent interested in shadows.
-        rayPos = rayPos+(rayDir*sceneParam.w)+(normal*bias*sceneParam.w); //we need some variable bias to prevent "shadow acne"
+        rayPos = rayPos+(rayDir*HDistance)+(normal*bias*HDistance); //we need some variable bias to prevent "shadow acne"
         rayDir = normalize(sunDir);
-        FragColor = (vec4(sceneParam.xyz/1.5,0)+(ShadowRays(rayDir,rayPos,FragColor))*(dot(normal,sunDir)))/1.75;   //this is a bit of a hack, but im basically averaging the shadows and the original colour to make the shadows smoother.
+        //this is a bit of a hack, but im basically averaging the shadows and the original colour to make the shadows smoother.
+        FragColor = (vec4(sceneParam/1.5,0)+(ShadowRays(rayDir,rayPos,FragColor))*(dot(normal,sunDir)))/1.75;
     }
 }
