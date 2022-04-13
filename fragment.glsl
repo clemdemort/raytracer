@@ -219,6 +219,6 @@ void main()
         rayDir = normalize(sunDir);
             //FragColor.xyz = renderPass(normal,rayPos,FragColor).xyz;
         //this is a bit of a hack, but im basically averaging the shadows and the original colour to make the shadows smoother.
-        FragColor = (vec4(sceneParam/1.125,0)+(ShadowRays(rayDir,rayPos,FragColor))*(dot(normal,sunDir)))/1.875;
+        FragColor = (vec4(sceneParam/2,0)+(ShadowRays(rayDir,rayPos,FragColor))*(dot(normal,sunDir)))/1.5;
     }
 }
