@@ -203,6 +203,7 @@ void processInput(GLFWwindow *window)
     camY -= Vsync.ElapsedTime * speed * sin(rotY);
     camZ += Vsync.ElapsedTime * speed * cos(rotX) * cos(rotY);
 
+    if (camY <= 0.1){camY = 0.1;}
     if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
     {
         float force = 30;

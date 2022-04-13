@@ -162,11 +162,29 @@ vec4 ShadowRays(vec3 rayDir, vec3 rayPos,vec4 oldColour)
     if(renderPass(rayDir,rayPos,oldColour).w == 1)
     {
         normal = temp;
-        return vec4(oldColour.x,oldColour.y,oldColour.z,4)/4.0;
+        return vec4(oldColour.x,oldColour.y,oldColour.z,8)/8.0;
     }
     return oldColour;
 }
+vec3 skyColor(vec3 rayDir )
+{
+    vec3 sundir = normalize(sunDir);
 
+    float yd = min(rayDir.y, 0);
+    rayDir.y = max(rayDir.y, 0);
+
+    vec3 col = vec3(0);
+
+    col += vec3(0.4, 0.4 - exp( -rayDir.y*20.0 )*0.15, 0) * exp(-rayDir.y*9.0); // Red / Green
+    col += vec3(0.3, 0.5, 0.6) * (1.0 - exp(-rayDir.y*8.0) ) * exp(-rayDir.y*0.9) ; // Blue
+
+    col = mix(col*1.2, vec3(0.3),  1.0-exp(yd*100.0)); // Fog
+
+    col += vec3(1.0, 0.8, 0.55) * pow( max(dot(rayDir,sundir),0.), 150. ) * 0.6; // Sun
+    col += pow(max(dot(rayDir, sundir),0.0), 150.0) *0.15;
+
+    return col;
+}
 
 void main()
 {
@@ -187,13 +205,9 @@ void main()
 	vec3 down = vec3(0.05,0.05,0.15);
 	vec3 col = abs(rayDir.y * down) + abs((1 - rayDir.y) * up) + abs((0.1/rayDir.y) * horizon)+ abs((0.75/rayDir.y + 0.5f) * horizon*0.15);
 	FragColor = vec4(col, 1.0)/4.0;
-	//coding the sun
+
     normal = sunDir;       //this is done otherwise the sky would be black if we use it in a normal calculation
-    float tsun = Sphere(vec3(0),rayDir,(sunDir*100),3);
-	col = vec3(1,1,0.3);   //will be the colour of the sun
-    if (tsun>0.0){
-        FragColor.xyz = col;
-        }
+    FragColor.xyz = skyColor(rayDir);
 
     //-----------------------------
     vec3 sceneParam = SceneIntersection(rayDir,rayPos,FragColor);
@@ -203,7 +217,8 @@ void main()
     }else{                              //if we are visualizing normals we arent interested in shadows.
         rayPos = rayPos+(rayDir*HDistance)+(normal*bias*HDistance); //we need some variable bias to prevent "shadow acne"
         rayDir = normalize(sunDir);
+            //FragColor.xyz = renderPass(normal,rayPos,FragColor).xyz;
         //this is a bit of a hack, but im basically averaging the shadows and the original colour to make the shadows smoother.
-        FragColor = (vec4(sceneParam/1.5,0)+(ShadowRays(rayDir,rayPos,FragColor))*(dot(normal,sunDir)))/1.75;
+        FragColor = (vec4(sceneParam/1.125,0)+(ShadowRays(rayDir,rayPos,FragColor))*(dot(normal,sunDir)))/1.875;
     }
 }
