@@ -44,11 +44,45 @@ layout(std430, binding = 2) buffer cubesLayout
     float cube_SSBO[];
 };
 
+vec2 rotate2d(vec2 v, float a) {
+	float sinA = sin(a);
+	float cosA = cos(a);
+	return vec2(v.x * cosA - v.y * sinA, v.y * cosA + v.x * sinA);
+}
+
+vec3 rotate3d(vec3 v, float a, float b,float c) {
+
+	float sinA = sin(a);
+	float cosA = cos(a);
+	float sinB = sin(b);
+	float cosB = cos(b);
+    float sinC = sin(c);
+	float cosC = cos(c);
+	mat3 rotationA = mat3(
+	1               ,  0            ,    0         ,
+    0               ,  cosA         ,    -sinA     ,
+    0               ,  sinA         ,    cosA
+	);
+	mat3 rotationB = mat3(
+	cosB            ,  0            ,    sinB      ,
+    0               ,  1            ,    0         ,
+    -sinB           ,  0            ,    cosB
+	);
+    mat3 rotationC = mat3(
+	cosC            ,  -sinC        ,     0        ,
+    sinC            ,  cosC         ,     0        ,
+    0               ,  0            ,     1
+	);
+	return v*rotationA*rotationB*rotationC;
+}
+
 //ray cube intersection
-vec4 Cube(vec3 rayPos, vec3 rayDir,vec3 pos, vec3 boxSize)
+vec4 Cube(vec3 raypos, vec3 raydir,vec3 pos, vec3 boxSize,vec3 rot)
 {
+    vec3 rayDir = rotate3d(raydir,rot.x,rot.y,rot.z);
+    vec3 rayPos = rotate3d(raypos,rot.x,rot.y,rot.z);
     vec3 m = 1.0/rayDir; // can precompute if traversing a set of aligned boxes
-    vec3 n = m*(rayPos-pos);   // can precompute if traversing a set of aligned boxes
+    vec3 n = m*(rayPos-rotate3d(pos,rot.x,rot.y,rot.z));   // can precompute if traversing a set of aligned boxes
     vec3 k = abs(m)*boxSize;
     vec3 t1 = -n - k;
     vec3 t2 = -n + k;
@@ -78,31 +112,6 @@ float Plane(vec3 rayPos,vec3 rayDir) {
 
 vec3 unit_vector(vec3 v) {
     return v / v.length();
-}
-
-vec2 rotate2d(vec2 v, float a) {
-	float sinA = sin(a);
-	float cosA = cos(a);
-	return vec2(v.x * cosA - v.y * sinA, v.y * cosA + v.x * sinA);
-}
-
-vec3 rotate3d(vec3 v, float a, float b) {
-
-	float sinA = sin(a);
-	float cosA = cos(a);
-	float sinB = sin(b);
-	float cosB = cos(b);
-	mat3 rotationA = mat3(
-	1               ,  0            ,    0         ,
-    0               ,  cosA         ,    -sinA     ,
-    0               ,  sinA         ,    cosA
-	);
-	mat3 rotationB = mat3(
-	cosB            ,  0            ,    sinB      ,
-    0               ,  1            ,    0         ,
-    -sinB           ,  0            ,    cosB
-	);
-	return v*rotationA*rotationB;
 }
 
 
@@ -139,7 +148,8 @@ vec4 renderPass(vec3 rayDir, vec3 rayPos,vec4 oldColour)
     for(int i = 0; i < cubeNUM; i++){
         vec3 pos = vec3(cube_SSBO[0+(i*14)],cube_SSBO[1+(i*14)],cube_SSBO[2+(i*14)]);
         vec3 size = vec3(cube_SSBO[3+(i*14)],cube_SSBO[4+(i*14)],cube_SSBO[5+(i*14)]);
-        vec4 param = Cube(rayPos,rayDir,pos,size);
+        vec3 rotation = vec3(cube_SSBO[6+(i*14)],cube_SSBO[7+(i*14)],cube_SSBO[8+(i*14)]);
+        vec4 param = Cube(rayPos,rayDir,pos,size,rotation);
         if (param.x < HDistance && param.x > 0.0) {
             HDistance = param.x;
             normal = param.yzw;
@@ -196,7 +206,7 @@ void main()
 	vec3 cameraPlaneV = vec3(0.0, 1.0, 0.0);
 	vec3 rayDir = cameraDir + screenPos.x * cameraPlaneU + screenPos.y * cameraPlaneV;
 	vec3 rayPos = CameraPos;
-	rayDir = normalize(rotate3d(rayDir,CameraRot.y,CameraRot.x));
+	rayDir = normalize(rotate3d(rayDir,CameraRot.y,CameraRot.x,0));
 
 	//coding the sky
 	//--------------

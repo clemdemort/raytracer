@@ -22,13 +22,14 @@ int SCR_WIDTH = 800;
 int SCR_HEIGHT = 600;
 
 TimeSync Vsync; //video sync
+TimeSync Psync; //"physics" sync
 TimeSync Titlesync; //speed at which the title should be refreshed
 
 
 //initialise the camera position
 //------------------------------
 float camX = 0, camY = 10, camZ = -20, rotX = 0, rotY = 0, rotZ = 0, speed = 0, latspeed = 0;
-scene showcase(45,45);
+scene showcase(50,20);
 int main()
 {
     // glfw: initialize and configure
@@ -112,11 +113,11 @@ int main()
 
     //transphering Cube Data:
     //-------------------------
-    SarrSize = (4 * showcase.numCubes * 14);
+    int CarrSize = (4 * showcase.numCubes * 14);
     GLuint CUBssbo;
     glGenBuffers(1, &CUBssbo);
     glBindBuffer(GL_SHADER_STORAGE_BUFFER, CUBssbo);
-    glBufferData(GL_SHADER_STORAGE_BUFFER, SarrSize, cubesarray, GL_STATIC_DRAW);
+    glBufferData(GL_SHADER_STORAGE_BUFFER, CarrSize, cubesarray, GL_STATIC_DRAW);
     glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 2, CUBssbo);
 
     //------------------------------------------------------------
@@ -128,6 +129,23 @@ int main()
         if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
             glfwSetWindowShouldClose(window, true);
         //this will repeat 60 times a second
+        if(Psync.Sync(60)){//we can update it even slower to leave more performance for rendering.
+            for(int i = 0;i<showcase.numSpheres;i++)
+            {
+                spheresarray[1+(i*9)] += 0.3*(sin(spheresarray[0+(i*9)]+spheresarray[2+(i*9)]+glfwGetTime()));
+            }
+            glBindBuffer(GL_SHADER_STORAGE_BUFFER, SPHssbo);
+            glBufferSubData(GL_SHADER_STORAGE_BUFFER,0,SarrSize,spheresarray);
+
+            for(int i = 0;i<showcase.numCubes;i++)
+            {
+                cubesarray[6+(i*14)] = 0.1*(cubesarray[0+(i*14)]+cubesarray[2+(i*14)]+glfwGetTime());
+                cubesarray[7+(i*14)] = 0.1*(cubesarray[0+(i*14)]+cubesarray[2+(i*14)]+glfwGetTime());
+                cubesarray[8+(i*14)] = 0.1*(cubesarray[0+(i*14)]+cubesarray[2+(i*14)]+glfwGetTime());
+            }
+            glBindBuffer(GL_SHADER_STORAGE_BUFFER, CUBssbo);
+            glBufferSubData(GL_SHADER_STORAGE_BUFFER,0,CarrSize,cubesarray);
+        }
         if(Vsync.Sync(60)){
             ShowFPS(window,"Raytracer", Vsync.ElapsedTime,4);
             // input
@@ -145,7 +163,6 @@ int main()
             renderer.setV3Float("planePos",0,0,0);
             renderer.setV3Float("planeNormal",0,1,0);
             renderer.setV3Float("planeColour",0.75,0.75,0.75);
-
             // render
             // ------
             glClearColor(0.2f, 0.3f, 0.3f, 1.0f);

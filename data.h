@@ -52,12 +52,12 @@ public:
 
         //1st we will generate the spheres
         //to do so we need to set mins and max for positions and Size
-        float maxPosX = 400;
-        float minPosX = -400;
-        float maxPosY = 50;
-        float minPosY = 0;
-        float maxPosZ = 400;
-        float minPosZ = -400;
+        float maxPosX = 300;
+        float minPosX = -300;
+        float maxPosY = 100;
+        float minPosY = 10;
+        float maxPosZ = 300;
+        float minPosZ = -300;
 
         float minSize = 1;
         float maxSize = 20;
@@ -81,15 +81,15 @@ public:
         }
         for(int i = 0; i < numofCubes; i++)
         {
-            cubelist[i].PosX = getrand(minPosX*100.0,maxPosX*100.0)/100;        //we want a bit more floating point precision
-            cubelist[i].PosY = getrand(minPosY*100.0,maxPosY*100.0)/100;
-            cubelist[i].PosZ = getrand(minPosZ*100.0,maxPosZ*100.0)/100;
-            cubelist[i].SizeX = getrand(minSize*100.0,maxSize*100.0)/100;
-            cubelist[i].SizeY = getrand(minSize*100.0,maxSize*100.0)/100;
-            cubelist[i].SizeZ = getrand(minSize*100.0,maxSize*100.0)/100;
-            cubelist[i].RotX = 0;
-            cubelist[i].RotY = 0;
-            cubelist[i].RotZ = 0;
+            cubelist[i].PosX          = getrand(minPosX*100.0,maxPosX*100.0)/100;        //we want a bit more floating point precision
+            cubelist[i].PosY          = getrand(minPosY*100.0,maxPosY*100.0)/100;
+            cubelist[i].PosZ          = getrand(minPosZ*100.0,maxPosZ*100.0)/100;
+            cubelist[i].SizeX         = getrand(minSize*100.0,maxSize*100.0)/100;
+            cubelist[i].SizeY         = getrand(minSize*100.0,maxSize*100.0)/100;
+            cubelist[i].SizeZ         = getrand(minSize*100.0,maxSize*100.0)/100;
+            cubelist[i].RotX          = getrand(0,3.14*100.0)/100;
+            cubelist[i].RotY          = getrand(0,3.14*100.0)/100;
+            cubelist[i].RotZ          = getrand(0,3.14*100.0)/100;
             cubelist[i].colourRED     = getrand(0,255)/255.0;
             cubelist[i].colourGREEN   = getrand(0,255)/255.0;
             cubelist[i].colourBLUE    = getrand(0,255)/255.0;
