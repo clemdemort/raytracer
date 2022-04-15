@@ -29,7 +29,7 @@ TimeSync Titlesync; //speed at which the title should be refreshed
 //initialise the camera position
 //------------------------------
 float camX = 0, camY = 10, camZ = -20, rotX = 0, rotY = 0, rotZ = 0, speed = 0, latspeed = 0;
-scene showcase(50,20);
+scene showcase(40,20);
 int main()
 {
     // glfw: initialize and configure
@@ -63,7 +63,7 @@ int main()
         return -1;
     }
     //VSYNC set to 1 if activated 0 if not 2 if half
-    glfwSwapInterval(1);
+    glfwSwapInterval(0);
     // build and compile our shader program
     // ------------------------------------
 
@@ -132,21 +132,21 @@ int main()
         if(Psync.Sync(60)){//we can update it even slower to leave more performance for rendering.
             for(int i = 0;i<showcase.numSpheres;i++)
             {
-                spheresarray[1+(i*9)] += 0.3*(sin(spheresarray[0+(i*9)]+spheresarray[2+(i*9)]+glfwGetTime()));
+                spheresarray[1+(i*9)] += 0.2*(sin(spheresarray[0+(i*9)]+spheresarray[2+(i*9)]+glfwGetTime()));  //this modifies the Y pos
             }
             glBindBuffer(GL_SHADER_STORAGE_BUFFER, SPHssbo);
             glBufferSubData(GL_SHADER_STORAGE_BUFFER,0,SarrSize,spheresarray);
 
             for(int i = 0;i<showcase.numCubes;i++)
             {
-                cubesarray[6+(i*14)] = 0.3*(cubesarray[0+(i*14)]+cubesarray[2+(i*14)]+glfwGetTime());
-                cubesarray[7+(i*14)] = 0.3*(cubesarray[0+(i*14)]+cubesarray[2+(i*14)]+glfwGetTime());
-                cubesarray[8+(i*14)] = 0.3*(cubesarray[0+(i*14)]+cubesarray[2+(i*14)]+glfwGetTime());
+                cubesarray[6+(i*14)] = 0.3*(cubesarray[0+(i*14)]+cubesarray[2+(i*14)]+glfwGetTime());   //these are the value for rotation X
+                cubesarray[7+(i*14)] = 0.3*(cubesarray[0+(i*14)]+cubesarray[2+(i*14)]+glfwGetTime());   // Y
+                cubesarray[8+(i*14)] = 0.3*(cubesarray[0+(i*14)]+cubesarray[2+(i*14)]+glfwGetTime());   // and Z
             }
             glBindBuffer(GL_SHADER_STORAGE_BUFFER, CUBssbo);
             glBufferSubData(GL_SHADER_STORAGE_BUFFER,0,CarrSize,cubesarray);
         }
-        if(Vsync.Sync(60)){
+        if(Vsync.Sync(0)){
             ShowFPS(window,"Raytracer", Vsync.ElapsedTime,4);
             // input
             // -----
