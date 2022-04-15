@@ -139,9 +139,9 @@ int main()
 
             for(int i = 0;i<showcase.numCubes;i++)
             {
-                cubesarray[6+(i*14)] = 0.1*(cubesarray[0+(i*14)]+cubesarray[2+(i*14)]+glfwGetTime());
-                cubesarray[7+(i*14)] = 0.1*(cubesarray[0+(i*14)]+cubesarray[2+(i*14)]+glfwGetTime());
-                cubesarray[8+(i*14)] = 0.1*(cubesarray[0+(i*14)]+cubesarray[2+(i*14)]+glfwGetTime());
+                cubesarray[6+(i*14)] = 0.3*(cubesarray[0+(i*14)]+cubesarray[2+(i*14)]+glfwGetTime());
+                cubesarray[7+(i*14)] = 0.3*(cubesarray[0+(i*14)]+cubesarray[2+(i*14)]+glfwGetTime());
+                cubesarray[8+(i*14)] = 0.3*(cubesarray[0+(i*14)]+cubesarray[2+(i*14)]+glfwGetTime());
             }
             glBindBuffer(GL_SHADER_STORAGE_BUFFER, CUBssbo);
             glBufferSubData(GL_SHADER_STORAGE_BUFFER,0,CarrSize,cubesarray);

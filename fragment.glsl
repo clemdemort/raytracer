@@ -76,20 +76,48 @@ vec3 rotate3d(vec3 v, float a, float b,float c) {
 	return v*rotationA*rotationB*rotationC;
 }
 
-//ray cube intersection
+vec3 invrotate3d(vec3 v, float a, float b,float c) {
+
+	float sinA = sin(a);
+	float cosA = cos(a);
+	float sinB = sin(b);
+	float cosB = cos(b);
+    float sinC = sin(c);
+	float cosC = cos(c);
+	mat3 rotationA = mat3(
+	1               ,  0            ,    0         ,
+    0               ,  cosA         ,    -sinA     ,
+    0               ,  sinA         ,    cosA
+	);
+	mat3 rotationB = mat3(
+	cosB            ,  0            ,    sinB      ,
+    0               ,  1            ,    0         ,
+    -sinB           ,  0            ,    cosB
+	);
+    mat3 rotationC = mat3(
+	cosC            ,  -sinC        ,     0        ,
+    sinC            ,  cosC         ,     0        ,
+    0               ,  0            ,     1
+	);
+	return v*inverse(rotationA*rotationB*rotationC);
+}
+
+
+
+//ray box intersection
 vec4 Cube(vec3 raypos, vec3 raydir,vec3 pos, vec3 boxSize,vec3 rot)
 {
     vec3 rayDir = rotate3d(raydir,rot.x,rot.y,rot.z);
     vec3 rayPos = rotate3d(raypos,rot.x,rot.y,rot.z);
-    vec3 m = 1.0/rayDir; // can precompute if traversing a set of aligned boxes
-    vec3 n = m*(rayPos-rotate3d(pos,rot.x,rot.y,rot.z));   // can precompute if traversing a set of aligned boxes
+    vec3 m = 1.0/rayDir;
+    vec3 n = m*(rayPos-rotate3d(pos,rot.x,rot.y,rot.z));
     vec3 k = abs(m)*boxSize;
     vec3 t1 = -n - k;
     vec3 t2 = -n + k;
     float tN = max( max( t1.x, t1.y ), t1.z );
     float tF = min( min( t2.x, t2.y ), t2.z );//    far intersection which we "might" need in the future.
     if( tN>=tF || tF<0.0) return vec4(-1.0); // no intersection
-    vec3 normal = -sign(rayDir)*step(t1.yzx,t1.xyz)*step(t1.zxy,t1.xyz);
+    vec3 normal = invrotate3d(-sign(rayDir)*step(t1.yzx,t1.xyz)*step(t1.zxy,t1.xyz),rot.x,rot.y,rot.z);
     return vec4(tN,normal);
 }
 
@@ -210,12 +238,6 @@ void main()
 
 	//coding the sky
 	//--------------
-	vec3 horizon = vec3(0.5,0.5,1);
-	vec3 up = vec3(0.25,0.25,0.75);
-	vec3 down = vec3(0.05,0.05,0.15);
-	vec3 col = abs(rayDir.y * down) + abs((1 - rayDir.y) * up) + abs((0.1/rayDir.y) * horizon)+ abs((0.75/rayDir.y + 0.5f) * horizon*0.15);
-	FragColor = vec4(col, 1.0)/4.0;
-
     normal = sunDir;       //this is done otherwise the sky would be black if we use it in a normal calculation
     FragColor.xyz = skyColor(rayDir);
 
