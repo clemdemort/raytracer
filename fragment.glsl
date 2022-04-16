@@ -21,6 +21,7 @@ uniform vec3 CameraPos;
 uniform vec3 CameraRot;
 uniform vec2 iResolution;
 uniform float Time;
+uniform float Rand;
 uniform vec3 planeNormal;   //the plane is passed as a uniform because who needs more than one anyways????
 uniform vec3 planePos;
 uniform vec3 planeColour;
@@ -28,6 +29,8 @@ uniform vec3 sunDir;
 uniform int getNormals;     //debugging stuff
 uniform int sphereNUM;      //variables to interract with the SSBOs
 uniform int cubeNUM;
+uniform int voxelNUM;
+layout(r8ui, binding = 4) uniform uimage3D voxOBJ1;//gets the binded texture
 
 //global variables
 
@@ -42,6 +45,11 @@ layout(std430, binding = 1) buffer spheresLayout
 layout(std430, binding = 2) buffer cubesLayout
 {
     float cube_SSBO[];
+};
+
+layout(std430, binding = 3) buffer voxelsLayout
+{
+    float voxel_SSBO[];
 };
 
 vec2 rotate2d(vec2 v, float a) {
@@ -184,6 +192,17 @@ vec4 renderPass(vec3 rayDir, vec3 rayPos,vec4 oldColour)
             rayProp = vec4(cube_SSBO[9+(i*14)],cube_SSBO[10+(i*14)],cube_SSBO[11+(i*14)],1);
         }
     }
+    for(int i = 0; i < voxelNUM; i++){
+        vec3 pos = vec3(voxel_SSBO[0+(i*10)],voxel_SSBO[1+(i*10)],voxel_SSBO[2+(i*10)]);
+        vec3 size = vec3(voxel_SSBO[3+(i*10)],voxel_SSBO[4+(i*10)],voxel_SSBO[5+(i*10)]);
+        vec3 rotation = vec3(voxel_SSBO[6+(i*10)],voxel_SSBO[7+(i*10)],voxel_SSBO[8+(i*10)]);
+        vec4 param = Cube(rayPos,rayDir,pos,size,rotation);
+        if (param.x < HDistance && param.x > 0.0) {
+            HDistance = param.x;
+            normal = param.yzw;
+            rayProp = vec4(1);
+        }
+    }
     return rayProp;
 }
 
@@ -245,7 +264,7 @@ void main()
     vec3 sceneParam = SceneIntersection(rayDir,rayPos,FragColor);
     FragColor.xyz = sceneParam;
     if(getNormals == 1){                //to help us visualize normals
-        FragColor.xyz = (1+normal.xyz)*0.5;
+        FragColor.xyz = ((1+normal.xyz)*0.5);
     }else{                              //if we are visualizing normals we arent interested in shadows.
         rayPos = rayPos+(rayDir*HDistance)+(normal*bias*HDistance); //we need some variable bias to prevent "shadow acne"
         rayDir = normalize(sunDir);

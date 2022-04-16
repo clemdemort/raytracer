@@ -29,7 +29,7 @@ TimeSync Titlesync; //speed at which the title should be refreshed
 //initialise the camera position
 //------------------------------
 float camX = 0, camY = 10, camZ = -20, rotX = 0, rotY = 0, rotZ = 0, speed = 0, latspeed = 0;
-scene showcase(40,20);
+scene showcase(40,20,1);
 int main()
 {
     // glfw: initialize and configure
@@ -93,11 +93,38 @@ int main()
     glEnableVertexAttribArray(0);
 
     // glBindVertexArray(0);
-    float * spheresarray = new float[showcase.numSpheres*9]; //initializing the array to intercept the data -> it must have the right size.
+    float * spheresarray;
     showcase.ToSSBOData("GET_SPHERE_DATA",spheresarray);
 
-    float * cubesarray = new float[showcase.numCubes*14]; //initializing the array to intercept the data -> it must have the right size.
+    float * cubesarray;
     showcase.ToSSBOData("GET_CUBE_DATA",cubesarray);
+
+    float * voxelsarray;
+    showcase.ToSSBOData("GET_VOXEL_DATA",voxelsarray);
+
+    int width = 50,height = 50,depth = 50;
+    uint8_t * voxSPC1;      //voxel space n°1
+    VoxelTex(&voxSphere,voxSPC1,width,height,depth);
+
+    //passing the voxelspace in a texture3D
+    GLuint voxOBJ1 = 0;    //declaring my texture3D
+    glDeleteBuffers(1, &voxOBJ1); //in case it hadn't properly been done before
+
+    int arrSize = (4 * width*height*depth); //specifying the memory size of the textures (times 4 because an int is 4 bytes!)
+    glGenTextures(1, &voxOBJ1);
+    glBindTexture(GL_TEXTURE_3D, voxOBJ1);
+    glTexStorage3D(GL_TEXTURE_3D,
+        1,             // No mipmaps
+        GL_R8UI,      // Internal format
+        width, height, depth);
+    glTexSubImage3D(GL_TEXTURE_3D,
+        0,                // Mipmap number
+        0, 0, 0,          // xoffset, yoffset, zoffset
+        width, height, depth, // width, height, depth
+        GL_RED,         // format
+        GL_UNSIGNED_INT, // type
+        voxSPC1);           // pointer to data
+    glMemoryBarrier(GL_TEXTURE_UPDATE_BARRIER_BIT);
 
     //this is how i transfer the content of the different object arrays
     //-----------------------------------------------------------------
@@ -119,8 +146,20 @@ int main()
     glBindBuffer(GL_SHADER_STORAGE_BUFFER, CUBssbo);
     glBufferData(GL_SHADER_STORAGE_BUFFER, CarrSize, cubesarray, GL_STATIC_DRAW);
     glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 2, CUBssbo);
+    //-------------------------
 
-    //------------------------------------------------------------
+    //transphering Voxel Data:
+    //-------------------------
+    int VarrSize = (4 * showcase.numVoxels * 10);
+    GLuint VOXssbo;
+    glGenBuffers(1, &VOXssbo);
+    glBindBuffer(GL_SHADER_STORAGE_BUFFER, VOXssbo);
+    glBufferData(GL_SHADER_STORAGE_BUFFER, VarrSize, voxelsarray, GL_STATIC_DRAW);
+    glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 3, VOXssbo);
+    //-------------------------
+
+    //creating a 3D texture to send it to the GPU
+
     glUseProgram(0); //clearing any program already linked
     // -----------
     while (!glfwWindowShouldClose(window))
@@ -156,13 +195,16 @@ int main()
             renderer.setV3Float("CameraPos",camX,camY,camZ);
             renderer.setV3Float("CameraRot",rotX,rotY,rotZ);
             renderer.setFloat("Time",glfwGetTime());
+            renderer.setFloat("Rand",getrand(-1000,1000)/1.0);
             renderer.setInt("sphereNUM",showcase.numSpheres);
             renderer.setInt("cubeNUM",showcase.numCubes);
-            renderer.setInt("getNormals",getNormals);
+            renderer.setInt("voxelNUM",showcase.numVoxels);
+            renderer.setInt("getNormals",getNormals);   //debug
             renderer.setV3Float("sunDir",cos(glfwGetTime()/20.0),0.75*(1+sin(glfwGetTime()/20.0)),sin(-glfwGetTime()/20.0));
             renderer.setV3Float("planePos",0,0,0);
             renderer.setV3Float("planeNormal",0,1,0);
             renderer.setV3Float("planeColour",0.75,0.75,0.75);
+
             // render
             // ------
             glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
@@ -170,6 +212,14 @@ int main()
 
             // render the triangle using the shader
             renderer.use();
+            //binding the texture before swapping the buffers
+            glBindImageTexture(4,
+                voxOBJ1,
+                0,
+                true,
+                0,
+                GL_READ_ONLY,
+                GL_R8UI);
 
             //------------------------------------------------------------------------        glBindVertexArray(VAO);
             glDrawArrays(GL_TRIANGLES, 0, 3);
