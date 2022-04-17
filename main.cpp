@@ -29,7 +29,7 @@ TimeSync Titlesync; //speed at which the title should be refreshed
 //initialise the camera position
 //------------------------------
 float camX = 0, camY = 10, camZ = -20, rotX = 0, rotY = 0, rotZ = 0, speed = 0, latspeed = 0;
-scene showcase(40,20,1);
+scene showcase(40,20,1); //40 sphere 20 boxes 1 voxel object
 int main()
 {
     // glfw: initialize and configure
@@ -102,29 +102,7 @@ int main()
     float * voxelsarray;
     showcase.ToSSBOData("GET_VOXEL_DATA",voxelsarray);
 
-    int width = 50,height = 50,depth = 50;
-    uint8_t * voxSPC1;      //voxel space n°1
-    VoxelTex(&voxSphere,voxSPC1,width,height,depth);
 
-    //passing the voxelspace in a texture3D
-    GLuint voxOBJ1 = 0;    //declaring my texture3D
-    glDeleteBuffers(1, &voxOBJ1); //in case it hadn't properly been done before
-
-    int arrSize = (4 * width*height*depth); //specifying the memory size of the textures (times 4 because an int is 4 bytes!)
-    glGenTextures(1, &voxOBJ1);
-    glBindTexture(GL_TEXTURE_3D, voxOBJ1);
-    glTexStorage3D(GL_TEXTURE_3D,
-        1,             // No mipmaps
-        GL_R8UI,      // Internal format
-        width, height, depth);
-    glTexSubImage3D(GL_TEXTURE_3D,
-        0,                // Mipmap number
-        0, 0, 0,          // xoffset, yoffset, zoffset
-        width, height, depth, // width, height, depth
-        GL_RED,         // format
-        GL_UNSIGNED_INT, // type
-        voxSPC1);           // pointer to data
-    glMemoryBarrier(GL_TEXTURE_UPDATE_BARRIER_BIT);
 
     //this is how i transfer the content of the different object arrays
     //-----------------------------------------------------------------
@@ -158,6 +136,30 @@ int main()
     glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 3, VOXssbo);
     //-------------------------
 
+    uint8_t * voxSPC = new uint8_t[1024*1024*1024];      //voxel space n°1
+    int width = 64,height = 64,depth = 64;
+    uint8_t * voxSPC1;
+    VoxelTex(&voxSphere,voxSPC1,width,height,depth);
+
+    //passing the voxelspace in a texture3D
+    GLuint voxATLAS = 0;    //declaring my texture3D
+    glDeleteBuffers(1, &voxATLAS); //in case it hadn't properly been done before
+    glGenTextures(1, &voxATLAS);
+    glBindTexture(GL_TEXTURE_3D, voxATLAS);
+    glTexStorage3D(GL_TEXTURE_3D,
+        1,             // No mipmaps
+        GL_R8UI,      // Internal format
+        1024, 1024, 1024);
+    glTexSubImage3D(GL_TEXTURE_3D,
+        0,                // Mipmap number
+        0, 0, 0,          // xoffset, yoffset, zoffset
+        width, height, depth, // width, height, depth
+        GL_RED,         // format
+        GL_UNSIGNED_INT, // type
+        voxSPC1);           // pointer to data
+    glMemoryBarrier(GL_TEXTURE_UPDATE_BARRIER_BIT);
+    free(voxSPC);
+    free(voxSPC1);
     //creating a 3D texture to send it to the GPU
 
     glUseProgram(0); //clearing any program already linked
@@ -214,7 +216,7 @@ int main()
             renderer.use();
             //binding the texture before swapping the buffers
             glBindImageTexture(4,
-                voxOBJ1,
+                voxATLAS,
                 0,
                 true,
                 0,
@@ -232,9 +234,13 @@ int main()
     }
     // optional: de-allocate all resources once they've outlived their purpose:
     // ------------------------------------------------------------------------
+    printf("deleting buffers...\n");
     glDeleteVertexArrays(1, &VAO);
     glDeleteBuffers(1, &VBO);
     glDeleteBuffers(1, &SPHssbo);
+    glDeleteBuffers(1, &CUBssbo);
+    glDeleteBuffers(1, &VOXssbo);
+    glDeleteBuffers(1, &voxATLAS);
 
     // glfw: terminate, clearing all previously allocated GLFW resources.
     // ------------------------------------------------------------------

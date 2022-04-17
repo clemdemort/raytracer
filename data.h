@@ -58,7 +58,7 @@ void VoxelTex(uint8_t (*filler)(int,int,int),uint8_t *& data,int width,int heigh
 
 uint8_t voxSphere(int x,int y,int z)
 {
-    int center = 25;
+    int center = 32;
     if(((x-center)*(x-center))+((y-center)*(y-center))+((z-center)*(z-center)))return 1;
     else return 0;
 }
@@ -133,17 +133,18 @@ public:
             cubelist[i].transparency  = getrand(0,255)/255.0;
             cubelist[i].roughthness   = getrand(0,255)/255.0;
         }
+        // some details are comented out to make the implementation of a feature easier, this is temporary however
         for(int i = 0; i < numofVoxels; i++)
         {
             voxellist[i].PosX          = 100;
             voxellist[i].PosY          = 100;
             voxellist[i].PosZ          = 100;
-            voxellist[i].SizeX         = getrand(minSize*100.0,maxSize*100.0)/100;
-            voxellist[i].SizeY         = getrand(minSize*100.0,maxSize*100.0)/100;
-            voxellist[i].SizeZ         = getrand(minSize*100.0,maxSize*100.0)/100;
-            voxellist[i].RotX          = getrand(0,3.14*100.0)/100;
-            voxellist[i].RotY          = getrand(0,3.14*100.0)/100;
-            voxellist[i].RotZ          = getrand(0,3.14*100.0)/100;
+            voxellist[i].SizeX         = 10;//getrand(minSize*100.0,maxSize*100.0)/100;
+            voxellist[i].SizeY         = 10;//getrand(minSize*100.0,maxSize*100.0)/100;
+            voxellist[i].SizeZ         = 10;//getrand(minSize*100.0,maxSize*100.0)/100;
+            //voxellist[i].RotX          = getrand(0,3.14*100.0)/100;
+            //voxellist[i].RotY          = getrand(0,3.14*100.0)/100;
+            //voxellist[i].RotZ          = getrand(0,3.14*100.0)/100;
             voxellist[i].textureID     = getrand(0,255)/255.0;
         }
     }
