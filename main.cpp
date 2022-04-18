@@ -63,7 +63,7 @@ int main()
         return -1;
     }
     //VSYNC set to 1 if activated 0 if not 2 if half
-    glfwSwapInterval(0);
+    glfwSwapInterval(1);
     // build and compile our shader program
     // ------------------------------------
 
@@ -136,7 +136,6 @@ int main()
     glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 3, VOXssbo);
     //-------------------------
 
-    uint8_t * voxSPC = new uint8_t[1024*1024*1024];      //voxel space n°1
     int width = 64,height = 64,depth = 64;
     uint8_t * voxSPC1;
     VoxelTex(&voxSphere,voxSPC1,width,height,depth);
@@ -154,11 +153,11 @@ int main()
         0,                // Mipmap number
         0, 0, 0,          // xoffset, yoffset, zoffset
         width, height, depth, // width, height, depth
-        GL_RED,         // format
-        GL_UNSIGNED_INT, // type
-        voxSPC1);           // pointer to data
+        GL_RED_INTEGER,         // format
+        GL_UNSIGNED_BYTE, // type
+        voxSPC1);
+    // pointer to data
     glMemoryBarrier(GL_TEXTURE_UPDATE_BARRIER_BIT);
-    free(voxSPC);
     free(voxSPC1);
     //creating a 3D texture to send it to the GPU
 
@@ -187,7 +186,7 @@ int main()
             glBindBuffer(GL_SHADER_STORAGE_BUFFER, CUBssbo);
             glBufferSubData(GL_SHADER_STORAGE_BUFFER,0,CarrSize,cubesarray);
         }
-        if(Vsync.Sync(0)){
+        if(Vsync.Sync(100)){
             ShowFPS(window,"Raytracer", Vsync.ElapsedTime,4);
             // input
             // -----

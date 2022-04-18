@@ -33,7 +33,7 @@ struct cube     //14 floats
 };
 
 //a voxel object is a basic box in which we raymarch a 3D texture
-struct VoxelOBJ     //10 floats
+struct VoxelOBJ     //15 floats
 {
     //Param 1
     float PosX,PosY,PosZ;
@@ -42,10 +42,11 @@ struct VoxelOBJ     //10 floats
     //Param 3
     float RotX,RotY,RotZ;
     //Param 5
-    float textureID;//could have been stored as an int but to keep things simple we will use floats
+    float texOffsetX,texOffsetY,texOffsetZ;     //where in the atlas will it look for?(point of begining)
+    float SampleSizeX,SampleSizeY,SampleSizeZ;  //how much will it look for?          (size of sample)
 };
 
-//here is a function to fill a heap array containing voxel data, it take a filler function as an argument and the array to be filled
+//here is a function to fill a heap array containing voxel data, it takes a filler function as an argument and the array to be filled
 //the other parameters are pretty self explanatory
 void VoxelTex(uint8_t (*filler)(int,int,int),uint8_t *& data,int width,int height,int depth)
 {
@@ -59,7 +60,7 @@ void VoxelTex(uint8_t (*filler)(int,int,int),uint8_t *& data,int width,int heigh
 uint8_t voxSphere(int x,int y,int z)
 {
     int center = 32;
-    if(((x-center)*(x-center))+((y-center)*(y-center))+((z-center)*(z-center)))return 1;
+    if(((x-center)*(x-center))+((y-center)*(y-center))+((z-center)*(z-center))<32*32)return 1;
     else return 0;
 }
 
@@ -142,10 +143,15 @@ public:
             voxellist[i].SizeX         = 10;//getrand(minSize*100.0,maxSize*100.0)/100;
             voxellist[i].SizeY         = 10;//getrand(minSize*100.0,maxSize*100.0)/100;
             voxellist[i].SizeZ         = 10;//getrand(minSize*100.0,maxSize*100.0)/100;
-            //voxellist[i].RotX          = getrand(0,3.14*100.0)/100;
-            //voxellist[i].RotY          = getrand(0,3.14*100.0)/100;
-            //voxellist[i].RotZ          = getrand(0,3.14*100.0)/100;
-            voxellist[i].textureID     = getrand(0,255)/255.0;
+            //voxellist[i].RotX        = getrand(0,3.14*100.0)/100;
+            //voxellist[i].RotY        = getrand(0,3.14*100.0)/100;
+            //voxellist[i].RotZ        = getrand(0,3.14*100.0)/100;
+            voxellist[i].texOffsetX    = 0;
+            voxellist[i].texOffsetY    = 0;
+            voxellist[i].texOffsetZ    = 0;
+            voxellist[i].SampleSizeX   = 64;
+            voxellist[i].SampleSizeY   = 64;
+            voxellist[i].SampleSizeZ   = 64;
         }
     }
     void ToSSBOData(std::string param,float *& data)
@@ -188,19 +194,24 @@ public:
 
         }
         if(param == "GET_VOXEL_DATA"){
-            data = new float[numVoxels*10];
+            data = new float[numVoxels*15];
             for(int i = 0;i < numVoxels; i++)
             {
-                data[(10*i)]    = voxellist[i].PosX;
-                data[(10*i)+1]  = voxellist[i].PosY;
-                data[(10*i)+2]  = voxellist[i].PosZ;
-                data[(10*i)+3]  = voxellist[i].SizeX;
-                data[(10*i)+4]  = voxellist[i].SizeY;
-                data[(10*i)+5]  = voxellist[i].SizeZ;
-                data[(10*i)+6]  = voxellist[i].RotX;
-                data[(10*i)+7]  = voxellist[i].RotY;
-                data[(10*i)+8]  = voxellist[i].RotZ;
-                data[(10*i)+9]  = voxellist[i].textureID;
+                data[(15*i)]    = voxellist[i].PosX;
+                data[(15*i)+1]  = voxellist[i].PosY;
+                data[(15*i)+2]  = voxellist[i].PosZ;
+                data[(15*i)+3]  = voxellist[i].SizeX;
+                data[(15*i)+4]  = voxellist[i].SizeY;
+                data[(15*i)+5]  = voxellist[i].SizeZ;
+                data[(15*i)+6]  = voxellist[i].RotX;
+                data[(15*i)+7]  = voxellist[i].RotY;
+                data[(15*i)+8]  = voxellist[i].RotZ;
+                data[(15*i)+9]  = voxellist[i].texOffsetX;
+                data[(15*i)+10] = voxellist[i].texOffsetY;
+                data[(15*i)+11] = voxellist[i].texOffsetZ;
+                data[(15*i)+12] = voxellist[i].SampleSizeX;
+                data[(15*i)+13] = voxellist[i].SampleSizeY;
+                data[(15*i)+14] = voxellist[i].SampleSizeZ;
 
             }
 

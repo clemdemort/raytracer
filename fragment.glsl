@@ -30,12 +30,12 @@ uniform int getNormals;     //debugging stuff
 uniform int sphereNUM;      //variables to interract with the SSBOs
 uniform int cubeNUM;
 uniform int voxelNUM;
-layout(r8ui, binding = 4) uniform uimage3D voxOBJ1;//gets the binded texture
+layout(r8ui, binding = 4) uniform uimage3D voxATLAS;//gets the binded texture
 
 //global variables
 
 vec3 normal;
-float HDistance;
+vec2 HDistance;
 
 layout(std430, binding = 1) buffer spheresLayout
 {
@@ -113,7 +113,7 @@ vec3 invrotate3d(vec3 v, float a, float b,float c) {
 
 
 //ray box intersection
-vec4 Cube(vec3 raypos, vec3 raydir,vec3 pos, vec3 boxSize,vec3 rot)
+vec2 Cube(vec3 raypos, vec3 raydir,vec3 pos, vec3 boxSize,vec3 rot)
 {
     vec3 rayDir = rotate3d(raydir,rot.x,rot.y,rot.z);
     vec3 rayPos = rotate3d(raypos,rot.x,rot.y,rot.z);
@@ -124,9 +124,9 @@ vec4 Cube(vec3 raypos, vec3 raydir,vec3 pos, vec3 boxSize,vec3 rot)
     vec3 t2 = -n + k;
     float tN = max( max( t1.x, t1.y ), t1.z );
     float tF = min( min( t2.x, t2.y ), t2.z );//    far intersection which we "might" need in the future.
-    if( tN>=tF || tF<0.0) return vec4(-1.0); // no intersection
-    vec3 normal = invrotate3d(-sign(rayDir)*step(t1.yzx,t1.xyz)*step(t1.zxy,t1.xyz),rot.x,rot.y,rot.z);
-    return vec4(tN,normal);
+    if( tN>=tF || tF<0.0) return vec2(-1.0); // no intersection
+    normal = invrotate3d(-sign(rayDir)*step(t1.yzx,t1.xyz)*step(t1.zxy,t1.xyz),rot.x,rot.y,rot.z);
+    return vec2(tN,tF);
 }
 
 //ray sphere collision
@@ -145,7 +145,59 @@ float Sphere(vec3 rayPos,vec3 rayDir, vec3 pos, float Radius )
 float Plane(vec3 rayPos,vec3 rayDir) {
     return -(dot(rayPos,planeNormal.xyz))/dot(rayDir,planeNormal.xyz);
 }
+//gets the voxel at the index's position
+uint getVoxel(ivec3 Index){
+    return imageLoad(voxATLAS,Index).r;
+}
 
+//is the cast voxel inside the Box?
+bool isinside(vec3 rayPos,vec3 rayDir,vec3 boxPos,vec3 VoxPos)
+{
+    if(HDistance.x <= length((boxPos+VoxPos)-rayPos) && length((boxPos+VoxPos)-rayPos) <= HDistance.y) //not sure about this one
+    {return true;}
+    return false;
+}
+//if this function touched something output the colour of the touched voxel
+//if this function did NOT touch something output an empty vector
+vec4 Voxels(vec3 rayDir, vec3 rayPos,vec3 pos, vec3 boxSize,vec3 rot,ivec3 listOffset,ivec3 SampleSize){//not done
+
+    ivec3 VoxPos = ivec3(floor(rayPos-pos));
+	vec3 deltaDist = abs(vec3(length(rayDir)) / rayDir);
+	ivec3 rayStep = ivec3(sign(rayDir));
+	vec3 sideDist = (sign(rayDir) * (vec3(VoxPos) - (rayPos-pos)) + (sign(rayDir) * 0.5) + 0.5) * deltaDist;
+	bvec3 mask;
+	bool touched = false;
+	bool insidebox = true;
+	while(touched == false && insidebox)
+	{
+		if (sideDist.x < sideDist.y) {
+				if (sideDist.x < sideDist.z) {
+					sideDist.x += deltaDist.x;
+					VoxPos.x += rayStep.x;
+					mask = bvec3(true, false, false);
+				}
+				else {
+					sideDist.z += deltaDist.z;
+					VoxPos.z += rayStep.z;
+					mask = bvec3(false, false, true);
+				}
+			}
+			else {
+				if (sideDist.y < sideDist.z) {
+					sideDist.y += deltaDist.y;
+					VoxPos.y += rayStep.y;
+					mask = bvec3(false, true, false);
+				}
+				else {
+					sideDist.z += deltaDist.z;
+					VoxPos.z += rayStep.z;
+					mask = bvec3(false, false, true);
+				}
+			}
+			if(isinside(rayPos,rayDir,pos,VoxPos)){
+			return vec4(1,0,0,0);}
+    }
+}
 vec3 unit_vector(vec3 v) {
     return v / v.length();
 }
@@ -155,12 +207,12 @@ vec4 renderPass(vec3 rayDir, vec3 rayPos,vec4 oldColour)
 {
     //this part will try to work out the properties of the ray by colliding it with the objects in the scene
     //--------------------------------------------------------------------------------------------------
-    HDistance = MAX_DIST;
+    HDistance.x = MAX_DIST;
     //rayprop: vec3(R,G,B), float(did_the_ray_hit?)->1 = it did hit -> -1 = it didn't.
     vec4 rayProp = vec4(oldColour.xyz,-1); //the ray didn't hit anything yet so rayprop.z = -1;
     //ray plane SceneIntersection
     float dist = Plane(rayPos,rayDir);
-    if(dist < HDistance && dist > 0.0)
+    if(dist < HDistance.x && dist > 0.0)
     {
         vec3 checkers = (dist*rayDir+rayPos)/50;
         if(int(checkers.x+MAX_DIST) % 2 == int(checkers.z+MAX_DIST) % 2 ){
@@ -168,15 +220,15 @@ vec4 renderPass(vec3 rayDir, vec3 rayPos,vec4 oldColour)
         }else{
             rayProp = vec4(planeColour*0.5,1);
         }
-        HDistance = dist;
+        HDistance.x = dist;
         normal = planeNormal;
     }
     for(int i = 0; i < sphereNUM; i++){
         vec3 pos = vec3(sphere_SSBO[0+(i*9)],sphere_SSBO[1+(i*9)],sphere_SSBO[2+(i*9)]);
         float Radius = sphere_SSBO[3+(i*9)];
         float dist = Sphere(rayPos,rayDir,pos,Radius);
-        if (dist < HDistance && dist > 0.0) {
-            HDistance = dist;
+        if (dist < HDistance.x && dist > 0.0) {
+            HDistance.x = dist;
             rayProp = vec4(sphere_SSBO[4+(i*9)],sphere_SSBO[5+(i*9)],sphere_SSBO[6+(i*9)],1);
             normal = normalize(rayPos+(rayDir*dist) - pos);
         }
@@ -185,23 +237,29 @@ vec4 renderPass(vec3 rayDir, vec3 rayPos,vec4 oldColour)
         vec3 pos = vec3(cube_SSBO[0+(i*14)],cube_SSBO[1+(i*14)],cube_SSBO[2+(i*14)]);
         vec3 size = vec3(cube_SSBO[3+(i*14)],cube_SSBO[4+(i*14)],cube_SSBO[5+(i*14)]);
         vec3 rotation = vec3(cube_SSBO[6+(i*14)],cube_SSBO[7+(i*14)],cube_SSBO[8+(i*14)]);
-        vec4 param = Cube(rayPos,rayDir,pos,size,rotation);
-        if (param.x < HDistance && param.x > 0.0) {
-            HDistance = param.x;
-            normal = param.yzw;
+        vec3 temp = normal;
+        vec2 param = Cube(rayPos,rayDir,pos,size,rotation);
+        if (param.x < HDistance.x && param.x > 0.0) {
+            HDistance.x = param.x;
+            HDistance.y = param.y;
             rayProp = vec4(cube_SSBO[9+(i*14)],cube_SSBO[10+(i*14)],cube_SSBO[11+(i*14)],1);
+            temp = normal;
         }
+        normal = temp;
     }
     for(int i = 0; i < voxelNUM; i++){
-        vec3 pos = vec3(voxel_SSBO[0+(i*10)],voxel_SSBO[1+(i*10)],voxel_SSBO[2+(i*10)]);
-        vec3 size = vec3(voxel_SSBO[3+(i*10)],voxel_SSBO[4+(i*10)],voxel_SSBO[5+(i*10)]);
-        vec3 rotation = vec3(voxel_SSBO[6+(i*10)],voxel_SSBO[7+(i*10)],voxel_SSBO[8+(i*10)]);
-        vec4 param = Cube(rayPos,rayDir,pos,size,rotation);
-        if (param.x < HDistance && param.x > 0.0) {
-            HDistance = param.x;
-            normal = param.yzw;
+        vec3 pos = vec3(voxel_SSBO[0+(i*15)],voxel_SSBO[1+(i*15)],voxel_SSBO[2+(i*15)]);
+        vec3 size = vec3(voxel_SSBO[3+(i*15)],voxel_SSBO[4+(i*15)],voxel_SSBO[5+(i*15)]);
+        vec3 rotation = vec3(voxel_SSBO[6+(i*15)],voxel_SSBO[7+(i*15)],voxel_SSBO[8+(i*15)]);
+        vec3 temp = normal;
+        vec2 param = Cube(rayPos,rayDir,pos,size,rotation);
+        if (param.x < HDistance.x && param.x > 0.0) {
+            HDistance.x = param.x;
+            HDistance.y = param.y;
             rayProp = vec4(1);
+            temp = normal;
         }
+        normal = temp;
     }
     return rayProp;
 }
@@ -266,10 +324,13 @@ void main()
     if(getNormals == 1){                //to help us visualize normals
         FragColor.xyz = ((1+normal.xyz)*0.5);
     }else{                              //if we are visualizing normals we arent interested in shadows.
-        rayPos = rayPos+(rayDir*HDistance)+(normal*bias*HDistance); //we need some variable bias to prevent "shadow acne"
+        rayPos = rayPos+(rayDir*HDistance.x)+(normal*bias*HDistance.x); //we need some variable bias to prevent "shadow acne"
         rayDir = normalize(sunDir);
             //FragColor.xyz = renderPass(normal,rayPos,FragColor).xyz;
         //this is a bit of a hack, but im basically averaging the shadows and the original colour to make the shadows smoother.
         FragColor = (vec4(sceneParam/2,0)+(ShadowRays(rayDir,rayPos,FragColor))*(dot(normal,sunDir)))/1.5;
     }
+
+    //FragColor.xyz = vec3(getVoxel(ivec3((screenPos+1)*32+10,32)));
+
 }
