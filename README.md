@@ -53,7 +53,7 @@ finaly in your terminal type in the project directory:
 
 >set up acceleration structure
 
->add voxel objects
+>add voxel objects ONGOING PROGRESS...
 
 >octree implementation on the voxel objects or some form of RLE compression
 
