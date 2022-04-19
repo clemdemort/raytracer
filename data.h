@@ -57,6 +57,7 @@ void VoxelTex(uint8_t (*filler)(int,int,int),uint8_t *& data,int width,int heigh
                 data[uint32_t((x*height*depth)+(y*depth)+z)] = filler(x,y,z);
 }
 
+//here is an example function that generates a sphere for a 64*64*64 voxel object
 uint8_t voxSphere(int x,int y,int z)
 {
     int center = 32;
@@ -96,7 +97,6 @@ public:
         float minPosY = 10;
         float maxPosZ = 75;
         float minPosZ = -75;
-
         float minSize = 1;
         float maxSize = 5;
 

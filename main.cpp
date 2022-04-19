@@ -186,7 +186,7 @@ int main()
             glBindBuffer(GL_SHADER_STORAGE_BUFFER, CUBssbo);
             glBufferSubData(GL_SHADER_STORAGE_BUFFER,0,CarrSize,cubesarray);
         }
-        if(Vsync.Sync(100)){
+        if(Vsync.Sync(100)){//found out that this makes the framerate a bit more stable in some cases
             ShowFPS(window,"Raytracer", Vsync.ElapsedTime,4);
             // input
             // -----
@@ -222,7 +222,7 @@ int main()
                 GL_READ_ONLY,
                 GL_R8UI);
 
-            //------------------------------------------------------------------------        glBindVertexArray(VAO);
+            //------------------------------------------------------------------------
             glDrawArrays(GL_TRIANGLES, 0, 3);
 
             // glfw: swap buffers and poll IO events (keys pressed/released, mouse moved etc.)

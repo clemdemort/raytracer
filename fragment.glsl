@@ -8,6 +8,11 @@
             actual distance = otherintersectiondistance
     - object shading
         colour = colour + shasow rays + dot product shading (with a bias to make things look better)
+
+    - voxel detection
+        get raypos relative to voxel object
+        substract position of object to raypos
+        raymarch the voxel data using DDA
 */
 
 #version 430 core
@@ -326,11 +331,10 @@ void main()
     }else{                              //if we are visualizing normals we arent interested in shadows.
         rayPos = rayPos+(rayDir*HDistance.x)+(normal*bias*HDistance.x); //we need some variable bias to prevent "shadow acne"
         rayDir = normalize(sunDir);
-            //FragColor.xyz = renderPass(normal,rayPos,FragColor).xyz;
+            //FragColor.xyz = renderPass(normal,rayPos,FragColor).xyz; //this makes the ray bounce but is still work in progress
         //this is a bit of a hack, but im basically averaging the shadows and the original colour to make the shadows smoother.
         FragColor = (vec4(sceneParam/2,0)+(ShadowRays(rayDir,rayPos,FragColor))*(dot(normal,sunDir)))/1.5;
     }
 
-    //FragColor.xyz = vec3(getVoxel(ivec3((screenPos+1)*32+10,32)));
 
 }
