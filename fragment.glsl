@@ -155,26 +155,22 @@ uint getVoxel(ivec3 Index){
     return imageLoad(voxATLAS,Index).r;
 }
 
-//is the cast voxel inside the Box?
-bool isinside(vec3 rayPos,vec3 rayDir,vec3 boxPos,vec3 VoxPos)
-{
-    if(HDistance.x <= length((boxPos+VoxPos)-rayPos) && length((boxPos+VoxPos)-rayPos) <= HDistance.y) //not sure about this one
-    {return true;}
-    return false;
-}
 //if this function touched something output the colour of the touched voxel
 //if this function did NOT touch something output an empty vector
-vec4 Voxels(vec3 rayDir, vec3 rayPos,vec3 pos, vec3 boxSize,vec3 rot,ivec3 listOffset,ivec3 SampleSize){//not done
+//will output vec2(float (distance),float (material))
+vec2 Voxels(vec3 rayDir, vec3 rayPos,vec3 pos, vec3 boxSize,vec3 rot,ivec3 listOffset,ivec3 SampleSize, vec2 Distance){//not done
 
-    ivec3 VoxPos = ivec3(floor(rayPos-pos));
+    vec3 VoxPos = vec3(floor(SampleSize*((rayPos+(rayDir*Distance.x))-pos+(boxSize))/(boxSize*2)));
 	vec3 deltaDist = abs(vec3(length(rayDir)) / rayDir);
-	ivec3 rayStep = ivec3(sign(rayDir));
+	ivec3 rayStep = ivec3(sign(rayDir*normalize(SampleSize)));
 	vec3 sideDist = (sign(rayDir) * (vec3(VoxPos) - (rayPos-pos)) + (sign(rayDir) * 0.5) + 0.5) * deltaDist;
 	bvec3 mask;
 	bool touched = false;
 	bool insidebox = true;
+	int iter = 0;
 	while(touched == false && insidebox)
 	{
+	iter++;
 		if (sideDist.x < sideDist.y) {
 				if (sideDist.x < sideDist.z) {
 					sideDist.x += deltaDist.x;
@@ -199,14 +195,20 @@ vec4 Voxels(vec3 rayDir, vec3 rayPos,vec3 pos, vec3 boxSize,vec3 rot,ivec3 listO
 					mask = bvec3(false, false, true);
 				}
 			}
-			if(isinside(rayPos,rayDir,pos,VoxPos)){
-			return vec4(1,0,0,0);}
+			if(VoxPos.x >= 0 && VoxPos.x <= SampleSize.x && VoxPos.y >= 0 && VoxPos.y <= SampleSize.y && VoxPos.z >= 0 && VoxPos.z <= SampleSize.z){
+                insidebox = true;
+                uint voxel = getVoxel(ivec3(VoxPos+listOffset));
+                if(voxel != 0.0)//something was touched
+                {
+                    float hitDistance = Distance.x + length(VoxPos-rayPos);
+                    return vec2(hitDistance,voxel);
+                }
+			}else{
+                insidebox = false;
+			}
     }
+    return vec2(0);
 }
-vec3 unit_vector(vec3 v) {
-    return v / v.length();
-}
-
 
 vec4 renderPass(vec3 rayDir, vec3 rayPos,vec4 oldColour)
 {
@@ -256,14 +258,16 @@ vec4 renderPass(vec3 rayDir, vec3 rayPos,vec4 oldColour)
         vec3 pos = vec3(voxel_SSBO[0+(i*15)],voxel_SSBO[1+(i*15)],voxel_SSBO[2+(i*15)]);
         vec3 size = vec3(voxel_SSBO[3+(i*15)],voxel_SSBO[4+(i*15)],voxel_SSBO[5+(i*15)]);
         vec3 rotation = vec3(voxel_SSBO[6+(i*15)],voxel_SSBO[7+(i*15)],voxel_SSBO[8+(i*15)]);
+        ivec3 listOffset = ivec3(voxel_SSBO[9+(i*15)],voxel_SSBO[10+(i*15)],voxel_SSBO[11+(i*15)]);
         ivec3 SampleSize = ivec3(voxel_SSBO[12+(i*15)],voxel_SSBO[13+(i*15)],voxel_SSBO[14+(i*15)]);
         vec3 temp = normal;
         vec2 param = Cube(rayPos,rayDir,pos,size,rotation);
+        param = Voxels(rayDir,rayPos,pos,size,rotation,listOffset,SampleSize, param);
         if (param.x < HDistance.x && param.x > 0.0) {
             HDistance.x = param.x;
-            HDistance.y = param.y;
+            //HDistance.y = param.y;
             vec3 VoxPos = vec3(floor(SampleSize*((rayPos+(rayDir*HDistance.x))-pos+(size))/(size*2)));
-            rayProp = vec4(VoxPos/(SampleSize/2),1);     //for now a quick way to visualize the individual voxels
+            rayProp = vec4(0.5,0.5,0.5,1);     //for now a quick way to visualize the individual voxels
             temp = normal;
         }
         normal = temp;
