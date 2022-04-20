@@ -128,7 +128,7 @@ int main()
 
     //transphering Voxel Data:
     //-------------------------
-    int VarrSize = (4 * showcase.numVoxels * 10);
+    int VarrSize = (4 * showcase.numVoxels * 15);
     GLuint VOXssbo;
     glGenBuffers(1, &VOXssbo);
     glBindBuffer(GL_SHADER_STORAGE_BUFFER, VOXssbo);

@@ -256,12 +256,14 @@ vec4 renderPass(vec3 rayDir, vec3 rayPos,vec4 oldColour)
         vec3 pos = vec3(voxel_SSBO[0+(i*15)],voxel_SSBO[1+(i*15)],voxel_SSBO[2+(i*15)]);
         vec3 size = vec3(voxel_SSBO[3+(i*15)],voxel_SSBO[4+(i*15)],voxel_SSBO[5+(i*15)]);
         vec3 rotation = vec3(voxel_SSBO[6+(i*15)],voxel_SSBO[7+(i*15)],voxel_SSBO[8+(i*15)]);
+        ivec3 SampleSize = ivec3(voxel_SSBO[12+(i*15)],voxel_SSBO[13+(i*15)],voxel_SSBO[14+(i*15)]);
         vec3 temp = normal;
         vec2 param = Cube(rayPos,rayDir,pos,size,rotation);
         if (param.x < HDistance.x && param.x > 0.0) {
             HDistance.x = param.x;
             HDistance.y = param.y;
-            rayProp = vec4(1);
+            vec3 VoxPos = vec3(floor(SampleSize*((rayPos+(rayDir*HDistance.x))-pos+(size))/(size*2)));
+            rayProp = vec4(VoxPos/(SampleSize/2),1);     //for now a quick way to visualize the individual voxels
             temp = normal;
         }
         normal = temp;
