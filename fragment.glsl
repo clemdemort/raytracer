@@ -158,6 +158,7 @@ uint getVoxel(ivec3 Index){
 //if this function touched something output the colour of the touched voxel
 //if this function did NOT touch something output an empty vector
 //will output vec2(float (distance),float (material))
+//WARNING: currently the function calculates incorrectly: distance,normals + something else i am looking into(likely to be the intersection)
 vec2 Voxels(vec3 rayDir, vec3 rayPos,vec3 pos, vec3 boxSize,vec3 rot,ivec3 listOffset,ivec3 SampleSize, vec2 Distance){//not done
 
     vec3 VoxPos = vec3(floor(SampleSize*((rayPos+(rayDir*Distance.x))-pos+(boxSize))/(boxSize*2)));
@@ -167,6 +168,10 @@ vec2 Voxels(vec3 rayDir, vec3 rayPos,vec3 pos, vec3 boxSize,vec3 rot,ivec3 listO
 	bvec3 mask;
 	bool touched = false;
 	bool insidebox = true;
+	if(rayPos.x > pos.x+boxSize.x && rayPos.x < pos.x && rayPos.y > pos.y+boxSize.y && rayPos.y < pos.y && rayPos.z > pos.z+boxSize.z && rayPos.z < pos.z)
+	{
+        VoxPos = SampleSize*(rayPos/boxSize);
+	}
 	int iter = 0;
 	while(touched == false && insidebox)
 	{
@@ -200,7 +205,8 @@ vec2 Voxels(vec3 rayDir, vec3 rayPos,vec3 pos, vec3 boxSize,vec3 rot,ivec3 listO
                 uint voxel = getVoxel(ivec3(VoxPos+listOffset));
                 if(voxel != 0.0)//something was touched
                 {
-                    float hitDistance = Distance.x + length(VoxPos-rayPos);
+                    normal = vec3(not(mask));
+                    float hitDistance = Distance.x + distance((VoxPos/SampleSize),rayPos);
                     return vec2(hitDistance,voxel);
                 }
 			}else{
