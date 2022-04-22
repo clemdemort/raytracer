@@ -1,4 +1,4 @@
-# raytracer (WIP build use 50th commit for a stable version)
+# raytracer (WIP build use 50th commit (April 15th) for a stable version)
 
 Here is my attempt at a small-ish real time ray-tracer using openGL 4.3. This is obviously not done so expect some progress in the comming weeks/months to this project.
 
