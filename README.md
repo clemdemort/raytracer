@@ -1,4 +1,4 @@
-# raytracer
+# raytracer (WIP build use 50th commit for a stable version)
 
 Here is my attempt at a small-ish real time ray-tracer using openGL 4.3. This is obviously not done so expect some progress in the comming weeks/months to this project.
 
@@ -57,3 +57,6 @@ finaly in your terminal type in the project directory:
 
 >octree implementation on the voxel objects or some form of RLE compression
 
+# WIP:
+currently implementing voxel objects is prooving to be pretty difficult, however in time this issue should be solved.
+At the moment getting the correct voxel hit depending on the position of the intersection with the box is prooving to be trickier than expected(not all faces connect properly) I am sorry for the inconvenience.
