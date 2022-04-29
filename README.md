@@ -1,4 +1,4 @@
-# raytracer (WIP build use 50th commit (April 15th) for a stable version)
+# raytracer
 
 Here is my attempt at a small-ish real time ray-tracer using openGL 4.3. This is obviously not done so expect some progress in the comming weeks/months to this project.
 
@@ -8,6 +8,8 @@ Here are some pictures of what the raytracer currently does:
 ![Screenshot_20220413_164021](https://user-images.githubusercontent.com/62178977/163209828-65049bb3-e851-4023-9358-31ff3efc2459.png)
 
 ![Screenshot_20220415_175045](https://user-images.githubusercontent.com/62178977/163593055-eb1cb7be-7e31-4edd-bc6a-b1112767eea6.png)
+
+![Voxel Ball](https://user-images.githubusercontent.com/62178977/165963815-083946aa-74a7-4afa-bccb-02e98b72f8dc.png)
 
 # Compiling on Linux:
 
@@ -54,9 +56,10 @@ finaly in your terminal type in the project directory:
 >set up acceleration structure
 
 >add voxel objects ONGOING PROGRESS...
+> - ~~fix projection issues~~
+> - fix normals
+> - fix the size implementation
+> - fix the primary Box collision
+> - allow VoxObjs to spin
 
 >octree implementation on the voxel objects or some form of RLE compression
-
-# WIP:
-currently implementing voxel objects is prooving to be pretty difficult, however in time this issue should be solved.
-At the moment getting the correct voxel hit depending on the position of the intersection with the box is prooving to be trickier than expected(not all faces connect properly) I am sorry for the inconvenience.
