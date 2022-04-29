@@ -5,11 +5,12 @@ Here is my attempt at a small-ish real time ray-tracer using openGL 4.3. This is
 Here are some pictures of what the raytracer currently does:
 ![image](https://user-images.githubusercontent.com/62178977/162789246-bd803e01-73f3-41ff-8927-6ea9204d446d.png)
 
+![Voxel Ball](https://user-images.githubusercontent.com/62178977/165963815-083946aa-74a7-4afa-bccb-02e98b72f8dc.png)
+
 ![Screenshot_20220413_164021](https://user-images.githubusercontent.com/62178977/163209828-65049bb3-e851-4023-9358-31ff3efc2459.png)
 
 ![Screenshot_20220415_175045](https://user-images.githubusercontent.com/62178977/163593055-eb1cb7be-7e31-4edd-bc6a-b1112767eea6.png)
 
-![Voxel Ball](https://user-images.githubusercontent.com/62178977/165963815-083946aa-74a7-4afa-bccb-02e98b72f8dc.png)
 
 # Compiling on Linux:
 
