@@ -160,22 +160,19 @@ uint getVoxel(ivec3 Index){
 //will output vec2(float (distance),float (material))
 //WARNING: currently the function calculates incorrectly: distance,normals + something else i am looking into(likely to be the intersection)
 vec2 Voxels(vec3 rayDir, vec3 rayPos,vec3 pos, vec3 boxSize,vec3 rot,ivec3 listOffset,ivec3 SampleSize, vec2 Distance){//not done
-
-    vec3 VoxPos = vec3(floor(SampleSize*((rayPos+(rayDir*Distance.x))-pos+(boxSize))/(boxSize*2)));
-	vec3 deltaDist = abs(vec3(length(rayDir)) / rayDir);
-	ivec3 rayStep = ivec3(sign(rayDir*normalize(SampleSize)));
-	vec3 sideDist = (sign(rayDir) * (vec3(VoxPos) - (rayPos-pos)) + (sign(rayDir) * 0.5) + 0.5) * deltaDist;
+    //         getting point of intersection                 correcting the center of the box
+    vec3 POI = SampleSize*((rayPos+(rayDir*Distance.x))-pos+(boxSize))/((boxSize)*2);
+    vec3 VposMin = pos - (boxSize/2);
+    vec3 VposMax = pos + (boxSize/2);
+    ivec3 VoxPos = ivec3(floor(POI));
+	vec3 deltaDist = abs(vec3(length(rayDir)) / (rayDir));
+	ivec3 rayStep = ivec3(sign(rayDir));
+	vec3 sideDist = (sign(rayDir) * (vec3(VoxPos) - (POI)) + (sign(rayDir) * 0.5) + 0.5) * deltaDist;
 	bvec3 mask;
 	bool touched = false;
 	bool insidebox = true;
-	if(rayPos.x > pos.x+boxSize.x && rayPos.x < pos.x && rayPos.y > pos.y+boxSize.y && rayPos.y < pos.y && rayPos.z > pos.z+boxSize.z && rayPos.z < pos.z)
-	{
-        VoxPos = SampleSize*(rayPos/boxSize);
-	}
-	int iter = 0;
 	while(touched == false && insidebox)
 	{
-	iter++;
 		if (sideDist.x < sideDist.y) {
 				if (sideDist.x < sideDist.z) {
 					sideDist.x += deltaDist.x;
@@ -205,8 +202,8 @@ vec2 Voxels(vec3 rayDir, vec3 rayPos,vec3 pos, vec3 boxSize,vec3 rot,ivec3 listO
                 uint voxel = getVoxel(ivec3(VoxPos+listOffset));
                 if(voxel != 0.0)//something was touched
                 {
-                    normal = vec3(not(mask));
-                    float hitDistance = Distance.x + distance((VoxPos/SampleSize),rayPos);
+                    normal = vec3(not(mask.yxz));
+                    float hitDistance = Distance.x /*+ distance(vec3(VoxPos/SampleSize),POI)*/;
                     return vec2(hitDistance,voxel);
                 }
 			}else{
@@ -262,19 +259,20 @@ vec4 renderPass(vec3 rayDir, vec3 rayPos,vec4 oldColour)
     }
     for(int i = 0; i < voxelNUM; i++){
         vec3 pos = vec3(voxel_SSBO[0+(i*15)],voxel_SSBO[1+(i*15)],voxel_SSBO[2+(i*15)]);
-        vec3 size = vec3(voxel_SSBO[3+(i*15)],voxel_SSBO[4+(i*15)],voxel_SSBO[5+(i*15)]);
+        vec3 boxSize = vec3(voxel_SSBO[3+(i*15)],voxel_SSBO[4+(i*15)],voxel_SSBO[5+(i*15)]);
         vec3 rotation = vec3(voxel_SSBO[6+(i*15)],voxel_SSBO[7+(i*15)],voxel_SSBO[8+(i*15)]);
         ivec3 listOffset = ivec3(voxel_SSBO[9+(i*15)],voxel_SSBO[10+(i*15)],voxel_SSBO[11+(i*15)]);
         ivec3 SampleSize = ivec3(voxel_SSBO[12+(i*15)],voxel_SSBO[13+(i*15)],voxel_SSBO[14+(i*15)]);
         vec3 temp = normal;
-        vec2 param = Cube(rayPos,rayDir,pos,size,rotation);
-        param = Voxels(rayDir,rayPos,pos,size,rotation,listOffset,SampleSize, param);
-        if (param.x < HDistance.x && param.x > 0.0) {
-            HDistance.x = param.x;
-            //HDistance.y = param.y;
-            vec3 VoxPos = vec3(floor(SampleSize*((rayPos+(rayDir*HDistance.x))-pos+(size))/(size*2)));
-            rayProp = vec4(0.5,0.5,0.5,1);     //for now a quick way to visualize the individual voxels
-            temp = normal;
+        vec2 param = Cube(rayPos,rayDir,pos,boxSize,rotation);
+        if (param.x < HDistance.x && param.x > 0.0){
+            param = Voxels(rayDir,rayPos,pos,boxSize,rotation,listOffset,SampleSize, param);
+            if (param.x < HDistance.x && param.x > 0.0){
+                HDistance.x = param.x;
+                //HDistance.y = param.y;
+                rayProp = vec4(1);     //for now a quick way to visualize the individual voxels
+                temp = normal;
+            }
         }
         normal = temp;
     }
@@ -343,7 +341,7 @@ void main()
     }else{                              //if we are visualizing normals we arent interested in shadows.
         rayPos = rayPos+(rayDir*HDistance.x)+(normal*bias*HDistance.x); //we need some variable bias to prevent "shadow acne"
         rayDir = normalize(sunDir);
-            //FragColor.xyz = renderPass(normal,rayPos,FragColor).xyz; //this makes the ray bounce but is still work in progress
+        //FragColor.xyz = renderPass(normal,rayPos,FragColor).xyz; //this makes the ray bounce but is still work in progress
         //this is a bit of a hack, but im basically averaging the shadows and the original colour to make the shadows smoother.
         FragColor = (vec4(sceneParam/2,0)+(ShadowRays(rayDir,rayPos,FragColor))*(dot(normal,sunDir)))/1.5;
     }

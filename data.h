@@ -66,7 +66,6 @@ uint8_t voxSphere(int x,int y,int z)
 }
 
 
-
 class scene
 {
 public:
@@ -137,9 +136,9 @@ public:
         // some details are comented out to make the implementation of a feature easier, this is temporary however
         for(int i = 0; i < numofVoxels; i++)
         {
-            voxellist[i].PosX          = 100;
-            voxellist[i].PosY          = 100;
-            voxellist[i].PosZ          = 100;
+            voxellist[i].PosX          = getrand(minPosX*100.0,maxPosX*100.0)/100;
+            voxellist[i].PosY          = getrand(minPosY*100.0,maxPosY*100.0)/100;
+            voxellist[i].PosZ          = getrand(minPosZ*100.0,maxPosZ*100.0)/100;
             voxellist[i].SizeX         = 10;//getrand(minSize*100.0,maxSize*100.0)/100;
             voxellist[i].SizeY         = 10;//getrand(minSize*100.0,maxSize*100.0)/100;
             voxellist[i].SizeZ         = 10;//getrand(minSize*100.0,maxSize*100.0)/100;
