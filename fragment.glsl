@@ -161,7 +161,7 @@ uint getVoxel(ivec3 Index){
 //WARNING: currently the function calculates incorrectly: distance,normals + something else i am looking into(likely to be the intersection)
 vec2 Voxels(vec3 rayDir, vec3 rayPos,vec3 pos, vec3 boxSize,vec3 rot,ivec3 listOffset,ivec3 SampleSize, vec2 Distance){//not done
     //         getting point of intersection                 correcting the center of the box
-    vec3 POI = SampleSize*((rayPos+(rayDir*Distance.x))-pos+(boxSize))/((boxSize)*2);
+    vec3 POI = SampleSize*((rayPos+(rayDir*Distance.x))-pos+(boxSize))/((boxSize)*2)+(bias*normal);
     vec3 VposMin = pos - (boxSize/2);
     vec3 VposMax = pos + (boxSize/2);
     ivec3 VoxPos = ivec3(floor(POI));
@@ -203,7 +203,11 @@ vec2 Voxels(vec3 rayDir, vec3 rayPos,vec3 pos, vec3 boxSize,vec3 rot,ivec3 listO
                 if(voxel != 0.0)//something was touched
                 {
                     normal = vec3(not(mask.yxz));
-                    float hitDistance = Distance.x /*+ distance(vec3(VoxPos/SampleSize),POI)*/;
+                    //VoxPos = SampleSize*((rayPos+(rayDir*Distance.x))-pos+(boxSize))/((boxSize)*2)
+                    //VoxPos/SampleSize = ((rayPos+(rayDir*Distance.x))-pos+(boxSize))/((boxSize)*2)
+                    //(VoxPos/SampleSize)*(boxSize*2) = ((rayPos+(rayDir*Distance.x))-pos+(boxSize))
+                    //(VoxPos/SampleSize)*(boxSize*2) +pos-(boxSize) = ((rayPos+(rayDir*Distance.x)))   //the problem is clearly the distance calculation, fixing in progress...
+                    float hitDistance = Distance.x + distance(rayPos+(rayDir*Distance.x),(VoxPos*boxSize*2/SampleSize) + pos - (boxSize));
                     return vec2(hitDistance,voxel);
                 }
 			}else{
