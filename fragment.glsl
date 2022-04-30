@@ -203,9 +203,9 @@ vec2 Voxels(vec3 rayDir, vec3 rayPos,vec3 pos, vec3 boxSize,vec3 rot,ivec3 listO
                 uint voxel = getVoxel(ivec3(VoxPos+listOffset));
                 if(voxel != 0.0)//something was touched
                 {
-                    normal = vec3(vec3(not(mask.yzx)));
-                    //distance of the original hit position with the position of the voxel hit
-                    float hitDistance = Distance.x + distance(rayPos+(rayDir*Distance.x),(VoxPos*boxSize*2/SampleSize) + pos - (boxSize));
+                    normal = vec3(-sign(rayDir)*vec3((mask.xyz)));
+                    //distance of the original hit position with the position of the voxel hit though the result is buggy(nearly incorrect) so i'll need to fix this...
+                    float hitDistance = Distance.x + distance(rayPos+(rayDir*Distance.x),((VoxPos)*boxSize*2/SampleSize) + pos - (boxSize));
                     return vec2(hitDistance,voxel);
                 }
 			}else{
