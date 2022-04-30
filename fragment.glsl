@@ -155,6 +155,7 @@ uint getVoxel(ivec3 Index){
     return imageLoad(voxATLAS,Index).r;
 }
 
+
 //if this function touched something output the colour of the touched voxel
 //if this function did NOT touch something output an empty vector
 //will output vec2(float (distance),float (material))
@@ -202,11 +203,8 @@ vec2 Voxels(vec3 rayDir, vec3 rayPos,vec3 pos, vec3 boxSize,vec3 rot,ivec3 listO
                 uint voxel = getVoxel(ivec3(VoxPos+listOffset));
                 if(voxel != 0.0)//something was touched
                 {
-                    normal = vec3(not(mask.yxz));
-                    //VoxPos = SampleSize*((rayPos+(rayDir*Distance.x))-pos+(boxSize))/((boxSize)*2)
-                    //VoxPos/SampleSize = ((rayPos+(rayDir*Distance.x))-pos+(boxSize))/((boxSize)*2)
-                    //(VoxPos/SampleSize)*(boxSize*2) = ((rayPos+(rayDir*Distance.x))-pos+(boxSize))
-                    //(VoxPos/SampleSize)*(boxSize*2) +pos-(boxSize) = ((rayPos+(rayDir*Distance.x)))   //the problem is clearly the distance calculation, fixing in progress...
+                    normal = vec3(vec3(not(mask.yzx)));
+                    //distance of the original hit position with the position of the voxel hit
                     float hitDistance = Distance.x + distance(rayPos+(rayDir*Distance.x),(VoxPos*boxSize*2/SampleSize) + pos - (boxSize));
                     return vec2(hitDistance,voxel);
                 }
@@ -269,12 +267,13 @@ vec4 renderPass(vec3 rayDir, vec3 rayPos,vec4 oldColour)
         ivec3 SampleSize = ivec3(voxel_SSBO[12+(i*15)],voxel_SSBO[13+(i*15)],voxel_SSBO[14+(i*15)]);
         vec3 temp = normal;
         vec2 param = Cube(rayPos,rayDir,pos,boxSize,rotation);
-        if (param.x < HDistance.x && param.x > 0.0){
+            //distance check                         //checks if the raypos is already inside the bounding box
+        if ((param.x < HDistance.x && param.x > 0.0) || (0>param.x && 0<param.y) ){
             param = Voxels(rayDir,rayPos,pos,boxSize,rotation,listOffset,SampleSize, param);
             if (param.x < HDistance.x && param.x > 0.0){
                 HDistance.x = param.x;
                 //HDistance.y = param.y;
-                rayProp = vec4(1);     //for now a quick way to visualize the individual voxels
+                rayProp = vec4(vec3(0.5),1);     //for now a quick way to visualize the individual voxels
                 temp = normal;
             }
         }
