@@ -61,7 +61,15 @@ void VoxelTex(uint8_t (*filler)(int,int,int),uint8_t *& data,int width,int heigh
 uint8_t voxSphere(int x,int y,int z)
 {
     int center = 32;
-    if(((x-center)*(x-center))+((y-center)*(y-center))+((z-center)*(z-center))<32*32)return 1;
+    float cond = 32;
+    if(((x-center)*(x-center))+((y-center)*(y-center))+((z-center)*(z-center))<cond*cond)return 1;
+    else return 0;
+}
+uint8_t voxShape(int x,int y,int z)
+{
+    int center = 32;
+    float cond = 100*sin((x+y+z)/3.0)+60*cos(z/5.0+7*sin((y+x)/6.0))+((x-center)*(x-center))+((y-center)*(y-center))+((z-center)*(z-center));
+    if(cond<30*30)return 1;
     else return 0;
 }
 
@@ -137,11 +145,11 @@ public:
         for(int i = 0; i < numofVoxels; i++)
         {
             voxellist[i].PosX          = getrand(minPosX*100.0,maxPosX*100.0)/100;
-            voxellist[i].PosY          = getrand(minPosY*100.0,maxPosY*100.0)/100;
             voxellist[i].PosZ          = getrand(minPosZ*100.0,maxPosZ*100.0)/100;
-            voxellist[i].SizeX         = 10;//getrand(minSize*100.0,maxSize*100.0)/100;
-            voxellist[i].SizeY         = 10;//getrand(minSize*100.0,maxSize*100.0)/100;
-            voxellist[i].SizeZ         = 10;//getrand(minSize*100.0,maxSize*100.0)/100;
+            voxellist[i].PosY          = 10 + 5*sin(voxellist[i].PosX)+ 5*cos(voxellist[i].PosZ);
+            voxellist[i].SizeX         = 5;//getrand(minSize*100.0,maxSize*100.0)/100;
+            voxellist[i].SizeY         = 5;//getrand(minSize*100.0,maxSize*100.0)/100;
+            voxellist[i].SizeZ         = 5;//getrand(minSize*100.0,maxSize*100.0)/100;
             //voxellist[i].RotX        = getrand(0,3.14*100.0)/100;
             //voxellist[i].RotY        = getrand(0,3.14*100.0)/100;
             //voxellist[i].RotZ        = getrand(0,3.14*100.0)/100;

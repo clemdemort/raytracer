@@ -162,9 +162,13 @@ uint getVoxel(ivec3 Index){
 //WARNING: currently the function calculates incorrectly: distance,normals + something else i am looking into(likely to be the intersection)
 vec2 Voxels(vec3 rayDir, vec3 rayPos,vec3 pos, vec3 boxSize,vec3 rot,ivec3 listOffset,ivec3 SampleSize, vec2 Distance){//not done
     //         getting point of intersection                 correcting the center of the box
-    vec3 POI = SampleSize*((rayPos+(rayDir*Distance.x))-pos+(boxSize))/((boxSize)*2)+(bias*normal);
-    vec3 VposMin = pos - (boxSize/2);
-    vec3 VposMax = pos + (boxSize/2);
+    vec3 POI;
+    if(Distance.x < 0 && Distance.y > 0)
+    {
+        POI = SampleSize*((rayPos)-pos+(boxSize))/((boxSize)*2);
+    }else{
+        POI = SampleSize*((rayPos+(rayDir*Distance.x))-pos+(boxSize))/((boxSize)*2);
+    }
     ivec3 VoxPos = ivec3(floor(POI));
 	vec3 deltaDist = abs(vec3(length(rayDir)) / (rayDir));
 	ivec3 rayStep = ivec3(sign(rayDir));
@@ -205,7 +209,8 @@ vec2 Voxels(vec3 rayDir, vec3 rayPos,vec3 pos, vec3 boxSize,vec3 rot,ivec3 listO
                 {
                     normal = vec3(-sign(rayDir)*vec3((mask.xyz)));
                     //distance of the original hit position with the position of the voxel hit though the result is buggy(nearly incorrect) so i'll need to fix this...
-                    float hitDistance = Distance.x + distance(rayPos+(rayDir*Distance.x),((VoxPos)*boxSize*2/SampleSize) + pos - (boxSize));
+                    float voxDist = distance(rayPos+(rayDir*Distance.x),((VoxPos)*boxSize*2/SampleSize) + pos - (boxSize));
+                    float hitDistance = Distance.x + voxDist;
                     return vec2(hitDistance,voxel);
                 }
 			}else{
@@ -268,12 +273,12 @@ vec4 renderPass(vec3 rayDir, vec3 rayPos,vec4 oldColour)
         vec3 temp = normal;
         vec2 param = Cube(rayPos,rayDir,pos,boxSize,rotation);
             //distance check                         //checks if the raypos is already inside the bounding box
-        if ((param.x < HDistance.x && param.x > 0.0) || (0>param.x && 0<param.y) ){
+        if ((param.x < HDistance.x && param.x > 0.0) || (0>=param.x && 0<param.y) ){
             param = Voxels(rayDir,rayPos,pos,boxSize,rotation,listOffset,SampleSize, param);
             if (param.x < HDistance.x && param.x > 0.0){
                 HDistance.x = param.x;
                 //HDistance.y = param.y;
-                rayProp = vec4(vec3(0.5),1);     //for now a quick way to visualize the individual voxels
+                rayProp = vec4(vec3((1+sin(pos))/2),1);     //for now a quick way to visualize the individual voxels
                 temp = normal;
             }
         }
