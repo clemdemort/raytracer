@@ -58,7 +58,8 @@ finaly in your terminal type in the project directory:
 
 >add voxel objects ONGOING PROGRESS...
 > - ~~fix projection issues~~
-> - fix normals
+> - ~~fix normals~~
+> - fix distance calculation
 > - fix the size implementation
 > - ~~fix the primary Box collision~~
 > - allow VoxObjs to spin
