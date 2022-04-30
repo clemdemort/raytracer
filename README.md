@@ -60,7 +60,7 @@ finaly in your terminal type in the project directory:
 > - ~~fix projection issues~~
 > - fix normals
 > - fix the size implementation
-> - fix the primary Box collision
+> - ~~fix the primary Box collision~~
 > - allow VoxObjs to spin
 
 >octree implementation on the voxel objects or some form of RLE compression
