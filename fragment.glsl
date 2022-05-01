@@ -167,7 +167,7 @@ vec2 Voxels(vec3 rayDir, vec3 rayPos,vec3 pos, vec3 boxSize,vec3 rot,ivec3 listO
     {
         POI = SampleSize*((rayPos)-pos+(boxSize))/((boxSize)*2);
     }else{
-        POI = SampleSize*((rayPos+(rayDir*Distance.x))-pos+(boxSize))/((boxSize)*2);
+        POI = SampleSize*((rayPos+(rayDir*Distance.x))-pos+(boxSize))/((boxSize)*2)+normal*bias;
     }
     ivec3 VoxPos = ivec3(floor(POI));
 	vec3 deltaDist = abs(vec3(length(rayDir)) / (rayDir));
