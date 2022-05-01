@@ -159,11 +159,11 @@ uint getVoxel(ivec3 Index){
 //if this function touched something output the colour of the touched voxel
 //if this function did NOT touch something output an empty vector
 //will output vec2(float (distance),float (material))
-//WARNING: currently the function calculates incorrectly: distance,normals + something else i am looking into(likely to be the intersection)
+//WARNING: currently the function calculates incorrectly: distance
 vec2 Voxels(vec3 rayDir, vec3 rayPos,vec3 pos, vec3 boxSize,vec3 rot,ivec3 listOffset,ivec3 SampleSize, vec2 Distance){//not done
     //         getting point of intersection                 correcting the center of the box
     vec3 POI;
-    if(Distance.x < 0 && Distance.y > 0)
+    if(Distance.x < 0 && Distance.y > 0)//if the camera is inside the object then POI will be equal to the position of the camera + boxpos
     {
         POI = SampleSize*((rayPos)-pos+(boxSize))/((boxSize)*2);
     }else{
@@ -202,14 +202,14 @@ vec2 Voxels(vec3 rayDir, vec3 rayPos,vec3 pos, vec3 boxSize,vec3 rot,ivec3 listO
 					mask = bvec3(false, false, true);
 				}
 			}
-			if(VoxPos.x >= 0 && VoxPos.x <= SampleSize.x && VoxPos.y >= 0 && VoxPos.y <= SampleSize.y && VoxPos.z >= 0 && VoxPos.z <= SampleSize.z){
+			if(VoxPos.x >= 0 && VoxPos.x <= SampleSize.x && VoxPos.y >= 0 && VoxPos.y <= SampleSize.y && VoxPos.z >= 0 && VoxPos.z <= SampleSize.z){//is there an easier way to do this?
                 insidebox = true;
                 uint voxel = getVoxel(ivec3(VoxPos+listOffset));
                 if(voxel != 0.0)//something was touched
                 {
                     normal = vec3(-sign(rayDir)*vec3((mask.xyz)));
-                    //distance of the original hit position with the position of the voxel hit though the result is buggy(nearly incorrect) so i'll need to fix this...
-                    float voxDist = distance(rayPos+(rayDir*Distance.x),((VoxPos)*boxSize*2/SampleSize) + pos - (boxSize));
+                    float t = dot(sideDist - deltaDist, vec3(mask));// thanks Kpreid for the very smart piece of code!
+                    float voxDist = distance(rayPos+(rayDir*Distance.x),((POI+rayDir*t)*boxSize*2/SampleSize) + pos - (boxSize));
                     float hitDistance = Distance.x + voxDist;
                     return vec2(hitDistance,voxel);
                 }
@@ -345,7 +345,7 @@ void main()
     vec3 sceneParam = SceneIntersection(rayDir,rayPos,FragColor);
     FragColor.xyz = sceneParam;
     if(getNormals == 1){                //to help us visualize normals
-        FragColor.xyz = ((1+normal.xyz)*0.5);
+        FragColor.xyz = ((1+normal.xyz)*0.5)/HDistance.x;
     }else{                              //if we are visualizing normals we arent interested in shadows.
         rayPos = rayPos+(rayDir*HDistance.x)+(normal*bias*HDistance.x); //we need some variable bias to prevent "shadow acne"
         rayDir = normalize(sunDir);

@@ -68,8 +68,8 @@ uint8_t voxSphere(int x,int y,int z)
 uint8_t voxShape(int x,int y,int z)
 {
     int center = 32;
-    float cond = 100*sin((x+y+z)/3.0)+60*cos(z/5.0+7*sin((y+x)/6.0))+((x-center)*(x-center))+((y-center)*(y-center))+((z-center)*(z-center));
-    if(cond<30*30)return 1;
+    float cond = 200*sin((x+y+z)/7.0)+120*cos(z/5.0+7*sin((y+x)/12.0))+((x-center)*(x-center))+((y-center)*(y-center))+((z-center)*(z-center));
+    if(cond<28*28)return 1;
     else return 0;
 }
 
