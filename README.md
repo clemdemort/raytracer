@@ -7,7 +7,7 @@ Here are some pictures of what the raytracer currently does:
 
 ![image](https://user-images.githubusercontent.com/62178977/166157106-da54191b-03c7-4767-a542-e68aa75f26a2.png)
 
-![Screenshot_20220413_164021](https://user-images.githubusercontent.com/62178977/163209828-65049bb3-e851-4023-9358-31ff3efc2459.png)
+![voxelBulb3](https://user-images.githubusercontent.com/62178977/166556313-ad6d65df-47a0-4f54-9ae9-766c5f7a7976.png)
 
 ![Screenshot_20220415_175045](https://user-images.githubusercontent.com/62178977/163593055-eb1cb7be-7e31-4edd-bc6a-b1112767eea6.png)
 
@@ -42,6 +42,8 @@ finaly in your terminal type in the project directory:
 
 > EXIT: exit the application
 
+PS: generating the voxel models might take a while so dont panic too much if the application takes a minute to load!
+
 # To-Do list:
 
 >~~add cubes~~ DONE
@@ -56,12 +58,6 @@ finaly in your terminal type in the project directory:
 
 >set up acceleration structure
 
->add voxel objects ONGOING PROGRESS...
-> - ~~fix projection issues~~
-> - ~~fix normals~~
-> - ~~fix distance calculation~~
-> - fix the size implementation
-> - ~~fix the primary Box collision~~
-> - ~~allow VoxObjs to spin~~
+>~~add voxel objects~~ DONE
 
 >octree implementation on the voxel objects or some form of RLE compression
