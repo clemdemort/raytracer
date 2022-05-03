@@ -160,14 +160,16 @@ uint getVoxel(ivec3 Index){
 //if this function did NOT touch something output an empty vector
 //will output vec2(float (distance),float (material))
 //WARNING: currently the function calculates incorrectly: distance
-vec2 Voxels(vec3 rayDir, vec3 rayPos,vec3 pos, vec3 boxSize,vec3 rot,ivec3 listOffset,ivec3 SampleSize, vec2 Distance){//not done
+vec2 Voxels(vec3 RayDir, vec3 RayPos,vec3 pos, vec3 boxSize,vec3 rot,ivec3 listOffset,ivec3 SampleSize, vec2 Distance){//not done
     //         getting point of intersection                 correcting the center of the box
     vec3 POI;
+    vec3 rayPos = rotate3d(RayPos,rot.x,rot.y,rot.z);
+    vec3 rayDir = rotate3d(RayDir,rot.x,rot.y,rot.z);
     if(Distance.x < 0 && Distance.y > 0)//if the camera is inside the object then POI will be equal to the position of the camera + boxpos
     {
-        POI = SampleSize*((rayPos)-pos+(boxSize))/((boxSize)*2);
+        POI = SampleSize*((rayPos)-rotate3d(pos,rot.x,rot.y,rot.z)+(boxSize))/((boxSize)*2);
     }else{
-        POI = SampleSize*((rayPos+(rayDir*Distance.x))-pos+(boxSize))/((boxSize)*2)+normal*bias;
+        POI = SampleSize*((rayPos+(rayDir*Distance.x))-rotate3d(pos,rot.x,rot.y,rot.z)+(boxSize))/((boxSize)*2)+rotate3d(normal,rot.x,rot.y,rot.z)*bias;
     }
     ivec3 VoxPos = ivec3(floor(POI));
 	vec3 deltaDist = abs(vec3(length(rayDir)) / (rayDir));
@@ -207,9 +209,9 @@ vec2 Voxels(vec3 rayDir, vec3 rayPos,vec3 pos, vec3 boxSize,vec3 rot,ivec3 listO
                 uint voxel = getVoxel(ivec3(VoxPos+listOffset));
                 if(voxel != 0.0)//something was touched
                 {
-                    normal = vec3(-sign(rayDir)*vec3((mask.xyz)));
+                    normal = invrotate3d(vec3(-sign(rayDir)*vec3((mask.xyz))),rot.x,rot.y,rot.z);
                     float t = dot(sideDist - deltaDist, vec3(mask));// thanks Kpreid for the very smart piece of code!
-                    float voxDist = distance(rayPos+(rayDir*Distance.x),((POI+rayDir*t)*boxSize*2/SampleSize) + pos - (boxSize));
+                    float voxDist = distance(rayPos+(rayDir*Distance.x),((POI+rayDir*t)*boxSize*2/SampleSize) + rotate3d(pos,rot.x,rot.y,rot.z) - (boxSize));
                     float hitDistance = Distance.x + voxDist;
                     return vec2(hitDistance,voxel);
                 }
@@ -278,7 +280,7 @@ vec4 renderPass(vec3 rayDir, vec3 rayPos,vec4 oldColour)
             if (param.x < HDistance.x && param.x > 0.0){
                 HDistance.x = param.x;
                 //HDistance.y = param.y;
-                rayProp = vec4(vec3((1+sin(pos))/2),1);     //for now a quick way to visualize the individual voxels
+                rayProp = vec4(1);     //for now a quick way to visualize the individual voxels
                 temp = normal;
             }
         }
@@ -345,7 +347,7 @@ void main()
     vec3 sceneParam = SceneIntersection(rayDir,rayPos,FragColor);
     FragColor.xyz = sceneParam;
     if(getNormals == 1){                //to help us visualize normals
-        FragColor.xyz = ((1+normal.xyz)*0.5)/HDistance.x;
+        FragColor.xyz = ((1+normal.xyz)*0.5);
     }else{                              //if we are visualizing normals we arent interested in shadows.
         rayPos = rayPos+(rayDir*HDistance.x)+(normal*bias*HDistance.x); //we need some variable bias to prevent "shadow acne"
         rayDir = normalize(sunDir);
@@ -353,6 +355,4 @@ void main()
         //this is a bit of a hack, but im basically averaging the shadows and the original colour to make the shadows smoother.
         FragColor = (vec4(sceneParam/2,0)+(ShadowRays(rayDir,rayPos,FragColor))*(dot(normal,sunDir)))/1.5;
     }
-
-
 }

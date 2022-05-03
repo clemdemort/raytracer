@@ -29,7 +29,7 @@ TimeSync Titlesync; //speed at which the title should be refreshed
 //initialise the camera position
 //------------------------------
 float camX = 0, camY = 10, camZ = -20, rotX = 0, rotY = 0, rotZ = 0, speed = 0, latspeed = 0;
-scene showcase(30,20,10); //40 sphere 20 boxes 1 voxel object
+scene showcase(10,10,1); //40 sphere 20 boxes 1 voxel object
 int main()
 {
     // glfw: initialize and configure
@@ -136,9 +136,9 @@ int main()
     glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 3, VOXssbo);
     //-------------------------
 
-    int width = 64,height = 64,depth = 64;
+    int width = 256,height = 256,depth = 256;
     uint8_t * voxSPC1;
-    VoxelTex(&voxShape,voxSPC1,width,height,depth);
+    VoxelTex(&voxBulb,voxSPC1,width,height,depth);
 
     //passing the voxelspace in a texture3D
     GLuint voxATLAS = 0;    //declaring my texture3D
@@ -185,6 +185,17 @@ int main()
             }
             glBindBuffer(GL_SHADER_STORAGE_BUFFER, CUBssbo);
             glBufferSubData(GL_SHADER_STORAGE_BUFFER,0,CarrSize,cubesarray);
+
+            /*for(int i = 0;i<showcase.numVoxels;i++)
+            {
+                voxelsarray[6+(i*15)] = 0.3*(voxelsarray[0+(i*15)]+voxelsarray[2+(i*15)]+glfwGetTime());   //these are the value for rotation X
+                voxelsarray[7+(i*15)] = 0.3*(voxelsarray[0+(i*15)]+voxelsarray[2+(i*15)]+glfwGetTime());   // Y
+                voxelsarray[8+(i*15)] = 0.3*(voxelsarray[0+(i*15)]+voxelsarray[2+(i*15)]+glfwGetTime());   // and Z
+            }
+            glBindBuffer(GL_SHADER_STORAGE_BUFFER, VOXssbo);
+            glBufferSubData(GL_SHADER_STORAGE_BUFFER,0,VarrSize,voxelsarray);
+            */
+
         }
         if(Vsync.Sync(100)){//found out that this makes the framerate a bit more stable in some cases
             ShowFPS(window,"Raytracer", Vsync.ElapsedTime,4);

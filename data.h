@@ -65,11 +65,32 @@ uint8_t voxSphere(int x,int y,int z)
     if(((x-center)*(x-center))+((y-center)*(y-center))+((z-center)*(z-center))<cond*cond)return 1;
     else return 0;
 }
-uint8_t voxShape(int x,int y,int z)
+uint8_t voxBulb(int x,int y,int z)
 {
-    int center = 32;
-    float cond = 200*sin((x+y+z)/7.0)+120*cos(z/5.0+7*sin((y+x)/12.0))+((x-center)*(x-center))+((y-center)*(y-center))+((z-center)*(z-center));
-    if(cond<28*28)return 1;
+    int sample = 8;
+    int iterCount = 12;
+    int i = 0;
+    float cx = 1.1*(x-128)/128.0;//this is done so the whole bulb can be seen
+    float cy = 1.1*(y-128)/128.0;
+    float cz = 1.1*(z-128)/120.0;
+    float r = 0;
+    float theta;
+    float phi;
+    float wx = cx,wy = cy,wz = cz;
+    while(i < iterCount && r <= 2)
+    {
+        r = sqrt(wx*wx + wy*wy + wz*wz);
+        theta = atan2(sqrt(wx*wx+wy*wy),wz);
+        phi = atan2(wy,wx);
+        float X2 = pow(r,sample)*sin(theta*sample)*cos(phi*sample);
+        float Y2 = pow(r,sample)*sin(theta*sample)*sin(phi*sample);
+        float Z2 = pow(r,sample)*cos(theta*sample);
+        wx = X2 + cx;
+        wy = Y2 + cy;
+        wz = Z2 + cz;
+        i++;
+    }
+    if(i >= iterCount)return 1;
     else return 0;
 }
 
@@ -150,15 +171,15 @@ public:
             voxellist[i].SizeX         = 5;//getrand(minSize*100.0,maxSize*100.0)/100;
             voxellist[i].SizeY         = 5;//getrand(minSize*100.0,maxSize*100.0)/100;
             voxellist[i].SizeZ         = 5;//getrand(minSize*100.0,maxSize*100.0)/100;
-            //voxellist[i].RotX        = getrand(0,3.14*100.0)/100;
-            //voxellist[i].RotY        = getrand(0,3.14*100.0)/100;
-            //voxellist[i].RotZ        = getrand(0,3.14*100.0)/100;
+            voxellist[i].RotX          = getrand(0,3.14*100.0)/100;
+            voxellist[i].RotY          = getrand(0,3.14*100.0)/100;
+            voxellist[i].RotZ          = getrand(0,3.14*100.0)/100;
             voxellist[i].texOffsetX    = 0;
             voxellist[i].texOffsetY    = 0;
             voxellist[i].texOffsetZ    = 0;
-            voxellist[i].SampleSizeX   = 64;
-            voxellist[i].SampleSizeY   = 64;
-            voxellist[i].SampleSizeZ   = 64;
+            voxellist[i].SampleSizeX   = 256;
+            voxellist[i].SampleSizeY   = 256;
+            voxellist[i].SampleSizeZ   = 256;
         }
     }
     void ToSSBOData(std::string param,float *& data)
