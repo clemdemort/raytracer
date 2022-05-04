@@ -7,7 +7,7 @@ Here are some pictures of what the raytracer currently does:
 
 ![image](https://user-images.githubusercontent.com/62178977/166157106-da54191b-03c7-4767-a542-e68aa75f26a2.png)
 
-![voxelBulb3](https://user-images.githubusercontent.com/62178977/166556313-ad6d65df-47a0-4f54-9ae9-766c5f7a7976.png)
+![voxelBulb4](https://user-images.githubusercontent.com/62178977/166815062-0a550dd5-2660-4e24-848a-36e3bdeb5778.png)
 
 ![Screenshot_20220415_175045](https://user-images.githubusercontent.com/62178977/163593055-eb1cb7be-7e31-4edd-bc6a-b1112767eea6.png)
 
