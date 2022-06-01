@@ -60,6 +60,6 @@ PS: generating the voxel models might take a while so dont panic too much if the
 
 >~~add voxel objects~~ DONE
 
->make the voxel object creator more efficient and resourcefull(model loading ;D)
+>make the voxel object creator more efficient and resourcefull(model loading ;D) ONGOING PROGRESS
 
 >octree implementation on the voxel objects or some form of RLE compression
