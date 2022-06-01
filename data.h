@@ -10,7 +10,15 @@ float getrand(int min ,int max)
     return min+(rand() % (max-min));
 }
 
+struct ivec3
+{
+    int x,y,z;
+};
 
+struct vec3
+{
+    float x,y,z;
+};
 struct sphere   //9 floats
 {
     //Param 1
@@ -46,33 +54,27 @@ struct VoxelOBJ     //15 floats
     float SampleSizeX,SampleSizeY,SampleSizeZ;  //how much will it look for?          (size of sample)
 };
 
-//here is a function to fill a heap array containing voxel data, it takes a filler function as an argument and the array to be filled
-//the other parameters are pretty self explanatory
-void VoxelTex(uint8_t (*filler)(int,int,int),uint8_t *& data,int width,int height,int depth)
+//here is an example function that generates a sphere
+uint8_t voxSphere(ivec3 P,ivec3 S)
 {
-    data = new uint8_t[width*height*depth];
-    for(int x = 0; x < width;x++)
-        for(int y = 0; y < height;y++)
-            for(int z = 0; z < depth;z++)
-                data[uint32_t((x*height*depth)+(y*depth)+z)] = filler(x,y,z);
-}
-
-//here is an example function that generates a sphere for a 64*64*64 voxel object
-uint8_t voxSphere(int x,int y,int z)
-{
-    int center = 32;
-    float cond = 32;
-    if(((x-center)*(x-center))+((y-center)*(y-center))+((z-center)*(z-center))<cond*cond)return 1;
+    float cx = float(2.*P.x/S.x)-1;
+    float cy = float(2.*P.y/S.y)-1;
+    float cz = float(2.*P.z/S.z)-1;
+	/*int coord1 = (P.x == 1 && P.y == 0 && P.z == 0);
+    int coord2 = (P.x == 0 && P.y == 0 && P.z == 35);
+	if(coord1 || coord2) return 1;
+    return 0;*/
+    if((cx*cx)+(cy*cy)+(cz*cz)<1)return 1;
     else return 0;
 }
-uint8_t voxBulb(int x,int y,int z)
+uint8_t voxBulb(ivec3 P, ivec3 S)
 {
-    int sample = 8;
-    int iterCount = 12;
+    float sample = 8;
+    int iterCount = 8;
     int i = 0;
-    float cx = 1.1*(x-128)/128.0;//this is done so the whole bulb can be seen
-    float cy = 1.1*(y-128)/128.0;
-    float cz = 1.1*(z-128)/120.0;
+    float cx = 1.1*(P.x-S.x/2.f)/float(S.x/2.0f);//this is done so the whole bulb can be seen
+    float cy = 1.1*(P.y-S.y/2.f)/float(S.y/2.0f);
+    float cz = 1.1*(P.z-S.z/2.f)/float(S.z/2.0f);
     float r = 0;
     float theta;
     float phi;
@@ -90,9 +92,9 @@ uint8_t voxBulb(int x,int y,int z)
         wz = Z2 + cz;
         i++;
     }
-    if(i >= iterCount)return 1;
-    else return 0;
+     return (i >= iterCount);
 }
+
 
 
 class scene
@@ -103,17 +105,16 @@ public:
     cube * cubelist = new cube[1];
     VoxelOBJ * voxellist = new VoxelOBJ[1];
     int numSpheres,numCubes,numVoxels;
-    scene(int numofSpheres,int numofCubes, int numofVoxels)
+    scene(int numofSpheres,int numofCubes)
     {
         delete[] spherelist;
         delete[] cubelist;
         delete[] voxellist;
         numSpheres = numofSpheres;
         numCubes = numofCubes;
-        numVoxels = numofVoxels;
         spherelist = new sphere[numofSpheres];
         cubelist = new cube[numofCubes];
-        voxellist = new VoxelOBJ[numofVoxels];
+        voxellist = new VoxelOBJ[1];
         //------------------------------------
         //this part will be responsible for generating the geometry so it should be easy enough to tweak
 
@@ -161,25 +162,6 @@ public:
             cubelist[i].colourBLUE    = getrand(0,255)/255.0;
             cubelist[i].transparency  = getrand(0,255)/255.0;
             cubelist[i].roughthness   = getrand(0,255)/255.0;
-        }
-        // some details are comented out to make the implementation of a feature easier, this is temporary however
-        for(int i = 0; i < numofVoxels; i++)
-        {
-            voxellist[i].PosX          = getrand(minPosX*100.0,maxPosX*100.0)/100;
-            voxellist[i].PosZ          = getrand(minPosZ*100.0,maxPosZ*100.0)/100;
-            voxellist[i].PosY          = 10 + 5*sin(voxellist[i].PosX)+ 5*cos(voxellist[i].PosZ);
-            voxellist[i].SizeX         = 5;//getrand(minSize*100.0,maxSize*100.0)/100;
-            voxellist[i].SizeY         = 5;//getrand(minSize*100.0,maxSize*100.0)/100;
-            voxellist[i].SizeZ         = 5;//getrand(minSize*100.0,maxSize*100.0)/100;
-            voxellist[i].RotX          = getrand(0,3.14*100.0)/100;
-            voxellist[i].RotY          = getrand(0,3.14*100.0)/100;
-            voxellist[i].RotZ          = getrand(0,3.14*100.0)/100;
-            voxellist[i].texOffsetX    = 0;
-            voxellist[i].texOffsetY    = 0;
-            voxellist[i].texOffsetZ    = 0;
-            voxellist[i].SampleSizeX   = 256;
-            voxellist[i].SampleSizeY   = 256;
-            voxellist[i].SampleSizeZ   = 256;
         }
     }
     void ToSSBOData(std::string param,float *& data)
@@ -240,7 +222,6 @@ public:
                 data[(15*i)+12] = voxellist[i].SampleSizeX;
                 data[(15*i)+13] = voxellist[i].SampleSizeY;
                 data[(15*i)+14] = voxellist[i].SampleSizeZ;
-
             }
 
         }
@@ -248,4 +229,76 @@ public:
 //amogus
 };
 
+
+void AppendVoxList(scene & world,ivec3 TexSize, ivec3 TexOffset,vec3 Pos,vec3 Rot,float size)
+{
+    //creating the readable voxel object for the class
+    VoxelOBJ obj;
+    obj.PosX = Pos.x;
+    obj.PosY = Pos.y;
+    obj.PosZ = Pos.z;
+    obj.RotX = Rot.x;
+    obj.RotY = Rot.y;
+    obj.RotZ = Rot.z;
+    obj.texOffsetX = TexOffset.x;
+    obj.texOffsetY = TexOffset.y;
+    obj.texOffsetZ = TexOffset.z;
+    obj.SampleSizeX = TexSize.x;
+    obj.SampleSizeY = TexSize.y;
+    obj.SampleSizeZ = TexSize.z;
+    //calculating the relative size
+    float sizeX,sizeY,sizeZ;
+    sizeX = size;  sizeY = size;   sizeZ = size;
+    if(TexSize.x >= TexSize.y && TexSize.x >= TexSize.z)//x is the biggest
+        {sizeX = size;      sizeY = size * (float(TexSize.y)/float(TexSize.x));     sizeZ = size * (float(TexSize.z)/float(TexSize.x));}
+    if(TexSize.y >= TexSize.x && TexSize.y >= TexSize.z)//y is the biggest
+        {sizeY = size;      sizeX = size * (float(TexSize.x)/float(TexSize.y));     sizeZ = size * (float(TexSize.z)/float(TexSize.y));}
+    if(TexSize.z >= TexSize.x && TexSize.z >= TexSize.y)//z is the biggest
+        {sizeZ = size;      sizeY = size * (float(TexSize.y)/float(TexSize.z));     sizeX = size * (float(TexSize.x)/float(TexSize.z));}
+
+    obj.SizeX = sizeX;
+    obj.SizeY = sizeY;
+    obj.SizeZ = sizeZ;
+    //sending the data to the class
+    world.numVoxels+=1;
+    VoxelOBJ * temp = world.voxellist;
+    world.voxellist = new VoxelOBJ[world.numVoxels];
+    for(int i = 0;i < world.numVoxels-1;i++)
+    {
+        world.voxellist[i] = temp[i];
+    }
+    world.voxellist[world.numVoxels-1] = obj;
+    free(temp);
+}
+void CreateVoxelOBJ(scene & world,GLuint texture,uint8_t(*filler)(ivec3,ivec3),ivec3 TexSize, ivec3 TexOffset,vec3 Pos,vec3 Rot,float size)
+{
+    //first we fill the 3D texture
+    //----------------------------
+
+    uint8_t * data = new uint8_t[TexSize.x*TexSize.y*TexSize.z];
+    for(int x = 0; x < TexSize.x;x++){
+        for(int y = 0; y < TexSize.y;y++){
+            for(int z = 0; z < TexSize.z;z++){
+                data[uint64_t((x*TexSize.y*TexSize.z)+(y*TexSize.z)+z)] = filler({x,y,z},TexSize);
+            }        }
+    }
+	int width,height,depth;
+	int a = TexSize.x;
+	int b = TexSize.y;
+	int c = TexSize.z;
+	//sending data into the texture we specified:
+    glBindTexture(GL_TEXTURE_3D, texture);
+    glTexSubImage3D(GL_TEXTURE_3D,
+        0,                // Mipmap number
+        TexOffset.x, TexOffset.y, TexOffset.z,          // xoffset, yoffset, zoffset
+        c, b, a, // width, height, depth
+        GL_RED_INTEGER,         // format
+        GL_UNSIGNED_BYTE, // type
+        data);
+    free(data);//freeing space once we've used it
+    //second we code the information so that our class "scene" knows what to make of it
+    //---------------------------------------------------------------------------------
+    AppendVoxList(world,TexSize,TexOffset,Pos,Rot,size);
+    //all done! :D
+}
 #endif

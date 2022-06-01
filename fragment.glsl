@@ -15,13 +15,15 @@
         raymarch the voxel data using DDA
 */
 
+
+//this file is most likely responsible for the glitchy stretched voxel object, the error seems not to stem from the generation of the object but rather the rendering, this is a pain in the arse XD
 #version 430 core
 //parameters
 out vec4 FragColor;
 in vec2 FragCoord;
 //constants
 float MAX_DIST = 10000000;
-float bias = 0.0001;        //too small = shadow acne , too big = inacurate shadows.
+float bias = 0.0002;        //too small = shadow acne , too big = inacurate shadows.
 uniform vec3 CameraPos;
 uniform vec3 CameraRot;
 uniform vec2 iResolution;
@@ -36,9 +38,8 @@ uniform int sphereNUM;      //variables to interract with the SSBOs
 uniform int cubeNUM;
 uniform int voxelNUM;
 layout(r8ui, binding = 4) uniform uimage3D voxATLAS;//gets the binded texture
-
+int reps = 1;
 //global variables
-
 vec3 normal;
 vec2 HDistance;
 
@@ -164,12 +165,12 @@ vec2 Voxels(vec3 RayDir, vec3 RayPos,vec3 pos, vec3 boxSize,vec3 rot,ivec3 listO
     //         getting point of intersection                 correcting the center of the box
     vec3 POI;
     vec3 rayPos = rotate3d(RayPos,rot.x,rot.y,rot.z);
-    vec3 rayDir = rotate3d(RayDir,rot.x,rot.y,rot.z);
+    vec3 rayDir = rotate3d(RayDir,rot.x,rot.y,rot.z);//(vec3(SampleSize)/max(SampleSize.z,max(SampleSize.x,SampleSize.y)));
     if(Distance.x < 0 && Distance.y > 0)//if the camera is inside the object then POI will be equal to the position of the camera + boxpos
     {
-        POI = SampleSize*((rayPos)-rotate3d(pos,rot.x,rot.y,rot.z)+(boxSize))/((boxSize)*2);
+        POI = (SampleSize/*+vec3(1)*/)*((rayPos)-rotate3d(pos,rot.x,rot.y,rot.z)+(boxSize))/((boxSize)*2);
     }else{
-        POI = SampleSize*((rayPos+(rayDir*Distance.x))-rotate3d(pos,rot.x,rot.y,rot.z)+(boxSize))/((boxSize)*2)+rotate3d(normal,rot.x,rot.y,rot.z)*bias;
+        POI = (/*vec3(1)+*/SampleSize)*((rayPos+(rayDir*Distance.x))-rotate3d(pos,rot.x,rot.y,rot.z)+(boxSize))/((boxSize)*2)+rotate3d(normal,rot.x,rot.y,rot.z)*bias;
     }
     ivec3 VoxPos = ivec3(floor(POI));
 	vec3 deltaDist = abs(vec3(length(rayDir)) / (rayDir));
@@ -204,14 +205,15 @@ vec2 Voxels(vec3 RayDir, vec3 RayPos,vec3 pos, vec3 boxSize,vec3 rot,ivec3 listO
 					mask = bvec3(false, false, true);
 				}
 			}
-			if(VoxPos.x >= 0 && VoxPos.x <= SampleSize.x && VoxPos.y >= 0 && VoxPos.y <= SampleSize.y && VoxPos.z >= 0 && VoxPos.z <= SampleSize.z){//is there an easier way to do this?
+			if(VoxPos.x >= 0 && VoxPos.x < SampleSize.x && VoxPos.y >= 0 && VoxPos.y < SampleSize.y && VoxPos.z >= 0 && VoxPos.z < SampleSize.z){//is there an easier way to do this?
                 insidebox = true;
-                uint voxel = getVoxel(ivec3(VoxPos+listOffset));
+                uint voxel = getVoxel(ivec3(VoxPos.zyx+listOffset));
+                reps++;
                 if(voxel != 0.0)//something was touched
                 {
                     normal = invrotate3d(vec3(-sign(rayDir)*vec3((mask.xyz))),rot.x,rot.y,rot.z);
                     float t = dot(sideDist - deltaDist, vec3(mask));// thanks Kpreid for the very smart piece of code!
-                    float voxDist = distance(rayPos+(rayDir*Distance.x),((POI+rayDir*t)*boxSize*2/SampleSize) + rotate3d(pos,rot.x,rot.y,rot.z) - (boxSize));
+                    float voxDist = distance(rayPos+(rayDir*Distance.x),((POI+rayDir*t)*boxSize*2/(SampleSize)) + rotate3d(pos,rot.x,rot.y,rot.z) - (boxSize));
                     float hitDistance = Distance.x + voxDist;
                     return vec2(hitDistance,voxel);
                 }
@@ -302,7 +304,7 @@ vec4 ShadowRays(vec3 rayDir, vec3 rayPos,vec4 oldColour)
     if(renderPass(rayDir,rayPos,oldColour).w == 1)
     {
         normal = temp;
-        return vec4(oldColour.x,oldColour.y,oldColour.z,8)/8.0;
+        return vec4(oldColour.x,oldColour.y,oldColour.z,8)/((8.0));
     }
     return oldColour;
 }
@@ -347,7 +349,8 @@ void main()
     vec3 sceneParam = SceneIntersection(rayDir,rayPos,FragColor);
     FragColor.xyz = sceneParam;
     if(getNormals == 1){                //to help us visualize normals
-        FragColor.xyz = ((1+normal.xyz)*0.5);
+        //FragColor.xyz = ((1+normal.xyz)*0.5);
+        FragColor.xyz = reps*vec3(((1+normal.xyz)*0.5))/10.0;
     }else{                              //if we are visualizing normals we arent interested in shadows.
         rayPos = rayPos+(rayDir*HDistance.x)+(normal*bias*HDistance.x); //we need some variable bias to prevent "shadow acne"
         rayDir = normalize(sunDir);

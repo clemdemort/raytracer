@@ -29,7 +29,7 @@ TimeSync Titlesync; //speed at which the title should be refreshed
 //initialise the camera position
 //------------------------------
 float camX = 0, camY = 10, camZ = -20, rotX = 0, rotY = 0, rotZ = 0, speed = 0, latspeed = 0;
-scene showcase(10,10,1); //40 sphere 20 boxes 1 voxel object
+scene showcase(10,10); //40 sphere 20 boxes 1 voxel object
 int main()
 {
     // glfw: initialize and configure
@@ -93,6 +93,51 @@ int main()
     glEnableVertexAttribArray(0);
 
     // glBindVertexArray(0);
+
+
+
+    int width = 64,height = 64,depth = 64;
+
+
+    //passing the voxelspace in a texture3D
+    GLuint voxATLAS = 0;    //declaring my texture3D
+    glDeleteBuffers(1, &voxATLAS); //in case it hadn't properly been done before
+    glGenTextures(1, &voxATLAS);
+    glBindTexture(GL_TEXTURE_3D, voxATLAS);
+    glTexStorage3D(GL_TEXTURE_3D,
+        1,             // No mipmaps
+        GL_R8UI,      // Internal format
+        1024, 1024, 1024);
+    glMemoryBarrier(GL_TEXTURE_UPDATE_BARRIER_BIT);
+    CreateVoxelOBJ(showcase,voxATLAS,
+                   &voxBulb,
+                   {200,100,100},
+                   {0,0,0},
+                   {getrand(-75*100.0,75*100.0)/100,getrand(0*100.0,75*100.0)/100,getrand(-75*100.0,75*100.0)/100},
+                   {0*getrand(-75*100.0,75*100.0)/100,0*getrand(0*100.0,75*100.0)/100,0*getrand(-75*100.0,75*100.0)/100},
+                   16
+                   );
+    CreateVoxelOBJ(showcase,voxATLAS,
+                   &voxBulb,
+                   {100,200,100},
+                   {200,0,0},
+                   {getrand(-75*100.0,75*100.0)/100,getrand(0*100.0,75*100.0)/100,getrand(-75*100.0,75*100.0)/100},
+                   {0*getrand(-75*100.0,75*100.0)/100,0*getrand(0*100.0,75*100.0)/100,0*getrand(-75*100.0,75*100.0)/100},
+                   16
+                   );
+    CreateVoxelOBJ(showcase,voxATLAS,
+                   &voxBulb,
+                   {100,100,200},
+                   {300,0,0},
+                   {getrand(-75*100.0,75*100.0)/100,getrand(0*100.0,75*100.0)/100,getrand(-75*100.0,75*100.0)/100},
+                   {0*getrand(-75*100.0,75*100.0)/100,0*getrand(0*100.0,75*100.0)/100,0*getrand(-75*100.0,75*100.0)/100},
+                   16
+                   );
+    glMemoryBarrier(GL_TEXTURE_UPDATE_BARRIER_BIT);
+    //creating a 3D texture to send it to the GPU
+
+    //this is how i transfer the content of the different object arrays
+    //-----------------------------------------------------------------
     float * spheresarray;
     showcase.ToSSBOData("GET_SPHERE_DATA",spheresarray);
 
@@ -101,12 +146,6 @@ int main()
 
     float * voxelsarray;
     showcase.ToSSBOData("GET_VOXEL_DATA",voxelsarray);
-
-
-
-    //this is how i transfer the content of the different object arrays
-    //-----------------------------------------------------------------
-
     //transphering Sphere Data:
     //-------------------------
     int SarrSize = (4 * showcase.numSpheres * 9);
@@ -136,30 +175,7 @@ int main()
     glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 3, VOXssbo);
     //-------------------------
 
-    int width = 256,height = 256,depth = 256;
-    uint8_t * voxSPC1;
-    VoxelTex(&voxBulb,voxSPC1,width,height,depth);
 
-    //passing the voxelspace in a texture3D
-    GLuint voxATLAS = 0;    //declaring my texture3D
-    glDeleteBuffers(1, &voxATLAS); //in case it hadn't properly been done before
-    glGenTextures(1, &voxATLAS);
-    glBindTexture(GL_TEXTURE_3D, voxATLAS);
-    glTexStorage3D(GL_TEXTURE_3D,
-        1,             // No mipmaps
-        GL_R8UI,      // Internal format
-        1024, 1024, 1024);
-    glTexSubImage3D(GL_TEXTURE_3D,
-        0,                // Mipmap number
-        0, 0, 0,          // xoffset, yoffset, zoffset
-        width, height, depth, // width, height, depth
-        GL_RED_INTEGER,         // format
-        GL_UNSIGNED_BYTE, // type
-        voxSPC1);
-    // pointer to data
-    glMemoryBarrier(GL_TEXTURE_UPDATE_BARRIER_BIT);
-    free(voxSPC1);
-    //creating a 3D texture to send it to the GPU
 
     glUseProgram(0); //clearing any program already linked
     // -----------
@@ -186,15 +202,15 @@ int main()
             glBindBuffer(GL_SHADER_STORAGE_BUFFER, CUBssbo);
             glBufferSubData(GL_SHADER_STORAGE_BUFFER,0,CarrSize,cubesarray);
 
-            /*for(int i = 0;i<showcase.numVoxels;i++)
+			//make the voxel objects spin around!
+            for(int i = 0;i<showcase.numVoxels;i++)
             {
-                voxelsarray[6+(i*15)] = 0.3*(voxelsarray[0+(i*15)]+voxelsarray[2+(i*15)]+glfwGetTime());   //these are the value for rotation X
-                voxelsarray[7+(i*15)] = 0.3*(voxelsarray[0+(i*15)]+voxelsarray[2+(i*15)]+glfwGetTime());   // Y
-                voxelsarray[8+(i*15)] = 0.3*(voxelsarray[0+(i*15)]+voxelsarray[2+(i*15)]+glfwGetTime());   // and Z
+                voxelsarray[6+(i*15)] = 03*(voxelsarray[0+(i*15)]+voxelsarray[2+(i*15)]+glfwGetTime());   //these are the value for rotation X
+                voxelsarray[7+(i*15)] = 03*(voxelsarray[0+(i*15)]+voxelsarray[2+(i*15)]+glfwGetTime());   // Y
+                voxelsarray[8+(i*15)] = 03*(voxelsarray[0+(i*15)]+voxelsarray[2+(i*15)]+glfwGetTime());   // and Z
             }
             glBindBuffer(GL_SHADER_STORAGE_BUFFER, VOXssbo);
             glBufferSubData(GL_SHADER_STORAGE_BUFFER,0,VarrSize,voxelsarray);
-            */
 
         }
         if(Vsync.Sync(100)){//found out that this makes the framerate a bit more stable in some cases
