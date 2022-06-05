@@ -111,28 +111,21 @@ int main()
     glMemoryBarrier(GL_TEXTURE_UPDATE_BARRIER_BIT);
     CreateVoxelOBJ(showcase,voxATLAS,
                    &voxBulb,
-                   {200,100,100},
+                   {100,100,100},
                    {0,0,0},
                    {getrand(-75*100.0,75*100.0)/100,getrand(0*100.0,75*100.0)/100,getrand(-75*100.0,75*100.0)/100},
                    {0*getrand(-75*100.0,75*100.0)/100,0*getrand(0*100.0,75*100.0)/100,0*getrand(-75*100.0,75*100.0)/100},
                    16
                    );
-    CreateVoxelOBJ(showcase,voxATLAS,
-                   &voxBulb,
-                   {100,200,100},
-                   {200,0,0},
-                   {getrand(-75*100.0,75*100.0)/100,getrand(0*100.0,75*100.0)/100,getrand(-75*100.0,75*100.0)/100},
-                   {0*getrand(-75*100.0,75*100.0)/100,0*getrand(0*100.0,75*100.0)/100,0*getrand(-75*100.0,75*100.0)/100},
-                   16
-                   );
-    CreateVoxelOBJ(showcase,voxATLAS,
-                   &voxBulb,
-                   {100,100,200},
-                   {300,0,0},
-                   {getrand(-75*100.0,75*100.0)/100,getrand(0*100.0,75*100.0)/100,getrand(-75*100.0,75*100.0)/100},
-                   {0*getrand(-75*100.0,75*100.0)/100,0*getrand(0*100.0,75*100.0)/100,0*getrand(-75*100.0,75*100.0)/100},
-                   16
-                   );
+
+    FillvoxelTex(voxATLAS,&voxBulb1,{100,100,100},{100,0,0});
+    FillvoxelTex(voxATLAS,&voxBulb2,{100,100,100},{200,0,0});
+    FillvoxelTex(voxATLAS,&voxBulb3,{100,100,100},{300,0,0});
+    FillvoxelTex(voxATLAS,&voxBulb4,{100,100,100},{400,0,0});
+    FillvoxelTex(voxATLAS,&voxBulb5,{100,100,100},{500,0,0});
+    FillvoxelTex(voxATLAS,&voxBulb6,{100,100,100},{600,0,0});
+    FillvoxelTex(voxATLAS,&voxBulb7,{100,100,100},{700,0,0});
+    FillvoxelTex(voxATLAS,&voxBulb8,{100,100,100},{800,0,0});
     glMemoryBarrier(GL_TEXTURE_UPDATE_BARRIER_BIT);
     //creating a 3D texture to send it to the GPU
 
@@ -205,10 +198,13 @@ int main()
 			//make the voxel objects spin around!
             for(int i = 0;i<showcase.numVoxels;i++)
             {
-                voxelsarray[6+(i*15)] = 03*(voxelsarray[0+(i*15)]+voxelsarray[2+(i*15)]+glfwGetTime());   //these are the value for rotation X
-                voxelsarray[7+(i*15)] = 03*(voxelsarray[0+(i*15)]+voxelsarray[2+(i*15)]+glfwGetTime());   // Y
-                voxelsarray[8+(i*15)] = 03*(voxelsarray[0+(i*15)]+voxelsarray[2+(i*15)]+glfwGetTime());   // and Z
+                voxelsarray[6+(i*15)] = 0.3*(voxelsarray[0+(i*15)]+voxelsarray[2+(i*15)]+glfwGetTime());   //these are the value for rotation X
+                voxelsarray[7+(i*15)] = 0.3*(voxelsarray[0+(i*15)]+voxelsarray[2+(i*15)]+glfwGetTime());   // Y
+                voxelsarray[8+(i*15)] = 0.3*(voxelsarray[0+(i*15)]+voxelsarray[2+(i*15)]+glfwGetTime());   // and Z
+		voxelsarray[9+(i*15)] = 100*floor(4.5*(1+sin(2.5*glfwGetTime()))); 
             }
+
+
             glBindBuffer(GL_SHADER_STORAGE_BUFFER, VOXssbo);
             glBufferSubData(GL_SHADER_STORAGE_BUFFER,0,VarrSize,voxelsarray);
 

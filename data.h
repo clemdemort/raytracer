@@ -94,6 +94,231 @@ uint8_t voxBulb(ivec3 P, ivec3 S)
     }
      return (i >= iterCount);
 }
+uint8_t voxBulb1(ivec3 P, ivec3 S)
+{
+    float sample = 9;
+    int iterCount = 8;
+    int i = 0;
+    float cx = 1.1*(P.x-S.x/2.f)/float(S.x/2.0f);//this is done so the whole bulb can be seen
+    float cy = 1.1*(P.y-S.y/2.f)/float(S.y/2.0f);
+    float cz = 1.1*(P.z-S.z/2.f)/float(S.z/2.0f);
+    float r = 0;
+    float theta;
+    float phi;
+    float wx = cx,wy = cy,wz = cz;
+    while(i < iterCount && r <= 2)
+    {
+        r = sqrt(wx*wx + wy*wy + wz*wz);
+        theta = atan2(sqrt(wx*wx+wy*wy),wz);
+        phi = atan2(wy,wx);
+        float X2 = pow(r,sample)*sin(theta*sample)*cos(phi*sample);
+        float Y2 = pow(r,sample)*sin(theta*sample)*sin(phi*sample);
+        float Z2 = pow(r,sample)*cos(theta*sample);
+        wx = X2 + cx;
+        wy = Y2 + cy;
+        wz = Z2 + cz;
+        i++;
+    }
+     return (i >= iterCount);
+}
+
+
+uint8_t voxBulb2(ivec3 P, ivec3 S)
+{
+    float sample = 10;
+    int iterCount = 8;
+    int i = 0;
+    float cx = 1.1*(P.x-S.x/2.f)/float(S.x/2.0f);//this is done so the whole bulb can be seen
+    float cy = 1.1*(P.y-S.y/2.f)/float(S.y/2.0f);
+    float cz = 1.1*(P.z-S.z/2.f)/float(S.z/2.0f);
+    float r = 0;
+    float theta;
+    float phi;
+    float wx = cx,wy = cy,wz = cz;
+    while(i < iterCount && r <= 2)
+    {
+        r = sqrt(wx*wx + wy*wy + wz*wz);
+        theta = atan2(sqrt(wx*wx+wy*wy),wz);
+        phi = atan2(wy,wx);
+        float X2 = pow(r,sample)*sin(theta*sample)*cos(phi*sample);
+        float Y2 = pow(r,sample)*sin(theta*sample)*sin(phi*sample);
+        float Z2 = pow(r,sample)*cos(theta*sample);
+        wx = X2 + cx;
+        wy = Y2 + cy;
+        wz = Z2 + cz;
+        i++;
+    }
+     return (i >= iterCount);
+}
+uint8_t voxBulb3(ivec3 P, ivec3 S)
+{
+    float sample = 11;
+    int iterCount = 8;
+    int i = 0;
+    float cx = 1.1*(P.x-S.x/2.f)/float(S.x/2.0f);//this is done so the whole bulb can be seen
+    float cy = 1.1*(P.y-S.y/2.f)/float(S.y/2.0f);
+    float cz = 1.1*(P.z-S.z/2.f)/float(S.z/2.0f);
+    float r = 0;
+    float theta;
+    float phi;
+    float wx = cx,wy = cy,wz = cz;
+    while(i < iterCount && r <= 2)
+    {
+        r = sqrt(wx*wx + wy*wy + wz*wz);
+        theta = atan2(sqrt(wx*wx+wy*wy),wz);
+        phi = atan2(wy,wx);
+        float X2 = pow(r,sample)*sin(theta*sample)*cos(phi*sample);
+        float Y2 = pow(r,sample)*sin(theta*sample)*sin(phi*sample);
+        float Z2 = pow(r,sample)*cos(theta*sample);
+        wx = X2 + cx;
+        wy = Y2 + cy;
+        wz = Z2 + cz;
+        i++;
+    }
+     return (i >= iterCount);
+}
+uint8_t voxBulb4(ivec3 P, ivec3 S)
+{
+    float sample = 12;
+    int iterCount = 8;
+    int i = 0;
+    float cx = 1.1*(P.x-S.x/2.f)/float(S.x/2.0f);//this is done so the whole bulb can be seen
+    float cy = 1.1*(P.y-S.y/2.f)/float(S.y/2.0f);
+    float cz = 1.1*(P.z-S.z/2.f)/float(S.z/2.0f);
+    float r = 0;
+    float theta;
+    float phi;
+    float wx = cx,wy = cy,wz = cz;
+    while(i < iterCount && r <= 2)
+    {
+        r = sqrt(wx*wx + wy*wy + wz*wz);
+        theta = atan2(sqrt(wx*wx+wy*wy),wz);
+        phi = atan2(wy,wx);
+        float X2 = pow(r,sample)*sin(theta*sample)*cos(phi*sample);
+        float Y2 = pow(r,sample)*sin(theta*sample)*sin(phi*sample);
+        float Z2 = pow(r,sample)*cos(theta*sample);
+        wx = X2 + cx;
+        wy = Y2 + cy;
+        wz = Z2 + cz;
+        i++;
+    }
+     return (i >= iterCount);
+}
+uint8_t voxBulb5(ivec3 P, ivec3 S)
+{
+    float sample = 13;
+    int iterCount = 8;
+    int i = 0;
+    float cx = 1.1*(P.x-S.x/2.f)/float(S.x/2.0f);//this is done so the whole bulb can be seen
+    float cy = 1.1*(P.y-S.y/2.f)/float(S.y/2.0f);
+    float cz = 1.1*(P.z-S.z/2.f)/float(S.z/2.0f);
+    float r = 0;
+    float theta;
+    float phi;
+    float wx = cx,wy = cy,wz = cz;
+    while(i < iterCount && r <= 2)
+    {
+        r = sqrt(wx*wx + wy*wy + wz*wz);
+        theta = atan2(sqrt(wx*wx+wy*wy),wz);
+        phi = atan2(wy,wx);
+        float X2 = pow(r,sample)*sin(theta*sample)*cos(phi*sample);
+        float Y2 = pow(r,sample)*sin(theta*sample)*sin(phi*sample);
+        float Z2 = pow(r,sample)*cos(theta*sample);
+        wx = X2 + cx;
+        wy = Y2 + cy;
+        wz = Z2 + cz;
+        i++;
+    }
+     return (i >= iterCount);
+}
+uint8_t voxBulb6(ivec3 P, ivec3 S)
+{
+    float sample = 14;
+    int iterCount = 8;
+    int i = 0;
+    float cx = 1.1*(P.x-S.x/2.f)/float(S.x/2.0f);//this is done so the whole bulb can be seen
+    float cy = 1.1*(P.y-S.y/2.f)/float(S.y/2.0f);
+    float cz = 1.1*(P.z-S.z/2.f)/float(S.z/2.0f);
+    float r = 0;
+    float theta;
+    float phi;
+    float wx = cx,wy = cy,wz = cz;
+    while(i < iterCount && r <= 2)
+    {
+        r = sqrt(wx*wx + wy*wy + wz*wz);
+        theta = atan2(sqrt(wx*wx+wy*wy),wz);
+        phi = atan2(wy,wx);
+        float X2 = pow(r,sample)*sin(theta*sample)*cos(phi*sample);
+        float Y2 = pow(r,sample)*sin(theta*sample)*sin(phi*sample);
+        float Z2 = pow(r,sample)*cos(theta*sample);
+        wx = X2 + cx;
+        wy = Y2 + cy;
+        wz = Z2 + cz;
+        i++;
+    }
+     return (i >= iterCount);
+}
+uint8_t voxBulb7(ivec3 P, ivec3 S)
+{
+    float sample = 15;
+    int iterCount = 8;
+    int i = 0;
+    float cx = 1.1*(P.x-S.x/2.f)/float(S.x/2.0f);//this is done so the whole bulb can be seen
+    float cy = 1.1*(P.y-S.y/2.f)/float(S.y/2.0f);
+    float cz = 1.1*(P.z-S.z/2.f)/float(S.z/2.0f);
+    float r = 0;
+    float theta;
+    float phi;
+    float wx = cx,wy = cy,wz = cz;
+    while(i < iterCount && r <= 2)
+    {
+        r = sqrt(wx*wx + wy*wy + wz*wz);
+        theta = atan2(sqrt(wx*wx+wy*wy),wz);
+        phi = atan2(wy,wx);
+        float X2 = pow(r,sample)*sin(theta*sample)*cos(phi*sample);
+        float Y2 = pow(r,sample)*sin(theta*sample)*sin(phi*sample);
+        float Z2 = pow(r,sample)*cos(theta*sample);
+        wx = X2 + cx;
+        wy = Y2 + cy;
+        wz = Z2 + cz;
+        i++;
+    }
+     return (i >= iterCount);
+}
+uint8_t voxBulb8(ivec3 P, ivec3 S)
+{
+    float sample = 16;
+    int iterCount = 8;
+    int i = 0;
+    float cx = 1.1*(P.x-S.x/2.f)/float(S.x/2.0f);//this is done so the whole bulb can be seen
+    float cy = 1.1*(P.y-S.y/2.f)/float(S.y/2.0f);
+    float cz = 1.1*(P.z-S.z/2.f)/float(S.z/2.0f);
+    float r = 0;
+    float theta;
+    float phi;
+    float wx = cx,wy = cy,wz = cz;
+    while(i < iterCount && r <= 2)
+    {
+        r = sqrt(wx*wx + wy*wy + wz*wz);
+        theta = atan2(sqrt(wx*wx+wy*wy),wz);
+        phi = atan2(wy,wx);
+        float X2 = pow(r,sample)*sin(theta*sample)*cos(phi*sample);
+        float Y2 = pow(r,sample)*sin(theta*sample)*sin(phi*sample);
+        float Z2 = pow(r,sample)*cos(theta*sample);
+        wx = X2 + cx;
+        wy = Y2 + cy;
+        wz = Z2 + cz;
+        i++;
+    }
+     return (i >= iterCount);
+}
+
+
+
+
+
+
+
 
 
 
@@ -270,11 +495,8 @@ void AppendVoxList(scene & world,ivec3 TexSize, ivec3 TexOffset,vec3 Pos,vec3 Ro
     world.voxellist[world.numVoxels-1] = obj;
     free(temp);
 }
-void CreateVoxelOBJ(scene & world,GLuint texture,uint8_t(*filler)(ivec3,ivec3),ivec3 TexSize, ivec3 TexOffset,vec3 Pos,vec3 Rot,float size)
+void FillvoxelTex(GLuint texture,uint8_t(*filler)(ivec3,ivec3),ivec3 TexSize, ivec3 TexOffset)
 {
-    //first we fill the 3D texture
-    //----------------------------
-
     uint8_t * data = new uint8_t[TexSize.x*TexSize.y*TexSize.z];
     for(int x = 0; x < TexSize.x;x++){
         for(int y = 0; y < TexSize.y;y++){
@@ -282,7 +504,6 @@ void CreateVoxelOBJ(scene & world,GLuint texture,uint8_t(*filler)(ivec3,ivec3),i
                 data[uint64_t((x*TexSize.y*TexSize.z)+(y*TexSize.z)+z)] = filler({x,y,z},TexSize);
             }        }
     }
-	int width,height,depth;
 	int a = TexSize.x;
 	int b = TexSize.y;
 	int c = TexSize.z;
@@ -296,9 +517,17 @@ void CreateVoxelOBJ(scene & world,GLuint texture,uint8_t(*filler)(ivec3,ivec3),i
         GL_UNSIGNED_BYTE, // type
         data);
     free(data);//freeing space once we've used it
+}
+void CreateVoxelOBJ(scene & world,GLuint texture,uint8_t(*filler)(ivec3,ivec3),ivec3 TexSize, ivec3 TexOffset,vec3 Pos,vec3 Rot,float size)
+{
+    //first we fill the 3D texture
+    //----------------------------
+    FillvoxelTex(texture,filler,TexSize,TexOffset);
     //second we code the information so that our class "scene" knows what to make of it
     //---------------------------------------------------------------------------------
     AppendVoxList(world,TexSize,TexOffset,Pos,Rot,size);
     //all done! :D
 }
+
+
 #endif
