@@ -4,6 +4,7 @@
 #include <GLFW/glfw3.h>
 #include <time.h>
 #include <math.h>
+#include <cstring>
 
 float getrand(int min, int max)
 {
@@ -52,6 +53,8 @@ struct VoxelOBJ // 15 floats
     // Param 5
     float texOffsetX, texOffsetY, texOffsetZ;    // where in the atlas will it look for?(point of begining)
     float SampleSizeX, SampleSizeY, SampleSizeZ; // how much will it look for?          (size of sample)
+    // Param 6
+    float PaletteID; //which pallette should the object use when taking colours into account
 };
 
 // here is an example function that generates a sphere
@@ -94,225 +97,14 @@ uint8_t voxBulb(ivec3 P, ivec3 S)
         wz = Z2 + cz;
         i++;
     }
-    return (i >= iterCount);
-}
-uint8_t voxBulb1(ivec3 P, ivec3 S)
-{
-    float sample = 9;
-    int iterCount = 8;
-    int i = 0;
-    float cx = 1.1 * (P.x - S.x / 2.f) / float(S.x / 2.0f); // this is done so the whole bulb can be seen
-    float cy = 1.1 * (P.y - S.y / 2.f) / float(S.y / 2.0f);
-    float cz = 1.1 * (P.z - S.z / 2.f) / float(S.z / 2.0f);
-    float r = 0;
-    float theta;
-    float phi;
-    float wx = cx, wy = cy, wz = cz;
-    while (i < iterCount && r <= 2)
-    {
-        r = sqrt(wx * wx + wy * wy + wz * wz);
-        theta = atan2(sqrt(wx * wx + wy * wy), wz);
-        phi = atan2(wy, wx);
-        float X2 = pow(r, sample) * sin(theta * sample) * cos(phi * sample);
-        float Y2 = pow(r, sample) * sin(theta * sample) * sin(phi * sample);
-        float Z2 = pow(r, sample) * cos(theta * sample);
-        wx = X2 + cx;
-        wy = Y2 + cy;
-        wz = Z2 + cz;
-        i++;
-    }
-    return (i >= iterCount);
+    return (i >= iterCount)*getrand(1,4);
 }
 
-uint8_t voxBulb2(ivec3 P, ivec3 S)
-{
-    float sample = 10;
-    int iterCount = 8;
-    int i = 0;
-    float cx = 1.1 * (P.x - S.x / 2.f) / float(S.x / 2.0f); // this is done so the whole bulb can be seen
-    float cy = 1.1 * (P.y - S.y / 2.f) / float(S.y / 2.0f);
-    float cz = 1.1 * (P.z - S.z / 2.f) / float(S.z / 2.0f);
-    float r = 0;
-    float theta;
-    float phi;
-    float wx = cx, wy = cy, wz = cz;
-    while (i < iterCount && r <= 2)
-    {
-        r = sqrt(wx * wx + wy * wy + wz * wz);
-        theta = atan2(sqrt(wx * wx + wy * wy), wz);
-        phi = atan2(wy, wx);
-        float X2 = pow(r, sample) * sin(theta * sample) * cos(phi * sample);
-        float Y2 = pow(r, sample) * sin(theta * sample) * sin(phi * sample);
-        float Z2 = pow(r, sample) * cos(theta * sample);
-        wx = X2 + cx;
-        wy = Y2 + cy;
-        wz = Z2 + cz;
-        i++;
-    }
-    return (i >= iterCount);
-}
-uint8_t voxBulb3(ivec3 P, ivec3 S)
-{
-    float sample = 11;
-    int iterCount = 8;
-    int i = 0;
-    float cx = 1.1 * (P.x - S.x / 2.f) / float(S.x / 2.0f); // this is done so the whole bulb can be seen
-    float cy = 1.1 * (P.y - S.y / 2.f) / float(S.y / 2.0f);
-    float cz = 1.1 * (P.z - S.z / 2.f) / float(S.z / 2.0f);
-    float r = 0;
-    float theta;
-    float phi;
-    float wx = cx, wy = cy, wz = cz;
-    while (i < iterCount && r <= 2)
-    {
-        r = sqrt(wx * wx + wy * wy + wz * wz);
-        theta = atan2(sqrt(wx * wx + wy * wy), wz);
-        phi = atan2(wy, wx);
-        float X2 = pow(r, sample) * sin(theta * sample) * cos(phi * sample);
-        float Y2 = pow(r, sample) * sin(theta * sample) * sin(phi * sample);
-        float Z2 = pow(r, sample) * cos(theta * sample);
-        wx = X2 + cx;
-        wy = Y2 + cy;
-        wz = Z2 + cz;
-        i++;
-    }
-    return (i >= iterCount);
-}
-uint8_t voxBulb4(ivec3 P, ivec3 S)
-{
-    float sample = 12;
-    int iterCount = 8;
-    int i = 0;
-    float cx = 1.1 * (P.x - S.x / 2.f) / float(S.x / 2.0f); // this is done so the whole bulb can be seen
-    float cy = 1.1 * (P.y - S.y / 2.f) / float(S.y / 2.0f);
-    float cz = 1.1 * (P.z - S.z / 2.f) / float(S.z / 2.0f);
-    float r = 0;
-    float theta;
-    float phi;
-    float wx = cx, wy = cy, wz = cz;
-    while (i < iterCount && r <= 2)
-    {
-        r = sqrt(wx * wx + wy * wy + wz * wz);
-        theta = atan2(sqrt(wx * wx + wy * wy), wz);
-        phi = atan2(wy, wx);
-        float X2 = pow(r, sample) * sin(theta * sample) * cos(phi * sample);
-        float Y2 = pow(r, sample) * sin(theta * sample) * sin(phi * sample);
-        float Z2 = pow(r, sample) * cos(theta * sample);
-        wx = X2 + cx;
-        wy = Y2 + cy;
-        wz = Z2 + cz;
-        i++;
-    }
-    return (i >= iterCount);
-}
-uint8_t voxBulb5(ivec3 P, ivec3 S)
-{
-    float sample = 13;
-    int iterCount = 8;
-    int i = 0;
-    float cx = 1.1 * (P.x - S.x / 2.f) / float(S.x / 2.0f); // this is done so the whole bulb can be seen
-    float cy = 1.1 * (P.y - S.y / 2.f) / float(S.y / 2.0f);
-    float cz = 1.1 * (P.z - S.z / 2.f) / float(S.z / 2.0f);
-    float r = 0;
-    float theta;
-    float phi;
-    float wx = cx, wy = cy, wz = cz;
-    while (i < iterCount && r <= 2)
-    {
-        r = sqrt(wx * wx + wy * wy + wz * wz);
-        theta = atan2(sqrt(wx * wx + wy * wy), wz);
-        phi = atan2(wy, wx);
-        float X2 = pow(r, sample) * sin(theta * sample) * cos(phi * sample);
-        float Y2 = pow(r, sample) * sin(theta * sample) * sin(phi * sample);
-        float Z2 = pow(r, sample) * cos(theta * sample);
-        wx = X2 + cx;
-        wy = Y2 + cy;
-        wz = Z2 + cz;
-        i++;
-    }
-    return (i >= iterCount);
-}
-uint8_t voxBulb6(ivec3 P, ivec3 S)
-{
-    float sample = 14;
-    int iterCount = 8;
-    int i = 0;
-    float cx = 1.1 * (P.x - S.x / 2.f) / float(S.x / 2.0f); // this is done so the whole bulb can be seen
-    float cy = 1.1 * (P.y - S.y / 2.f) / float(S.y / 2.0f);
-    float cz = 1.1 * (P.z - S.z / 2.f) / float(S.z / 2.0f);
-    float r = 0;
-    float theta;
-    float phi;
-    float wx = cx, wy = cy, wz = cz;
-    while (i < iterCount && r <= 2)
-    {
-        r = sqrt(wx * wx + wy * wy + wz * wz);
-        theta = atan2(sqrt(wx * wx + wy * wy), wz);
-        phi = atan2(wy, wx);
-        float X2 = pow(r, sample) * sin(theta * sample) * cos(phi * sample);
-        float Y2 = pow(r, sample) * sin(theta * sample) * sin(phi * sample);
-        float Z2 = pow(r, sample) * cos(theta * sample);
-        wx = X2 + cx;
-        wy = Y2 + cy;
-        wz = Z2 + cz;
-        i++;
-    }
-    return (i >= iterCount);
-}
-uint8_t voxBulb7(ivec3 P, ivec3 S)
-{
-    float sample = 15;
-    int iterCount = 8;
-    int i = 0;
-    float cx = 1.1 * (P.x - S.x / 2.f) / float(S.x / 2.0f); // this is done so the whole bulb can be seen
-    float cy = 1.1 * (P.y - S.y / 2.f) / float(S.y / 2.0f);
-    float cz = 1.1 * (P.z - S.z / 2.f) / float(S.z / 2.0f);
-    float r = 0;
-    float theta;
-    float phi;
-    float wx = cx, wy = cy, wz = cz;
-    while (i < iterCount && r <= 2)
-    {
-        r = sqrt(wx * wx + wy * wy + wz * wz);
-        theta = atan2(sqrt(wx * wx + wy * wy), wz);
-        phi = atan2(wy, wx);
-        float X2 = pow(r, sample) * sin(theta * sample) * cos(phi * sample);
-        float Y2 = pow(r, sample) * sin(theta * sample) * sin(phi * sample);
-        float Z2 = pow(r, sample) * cos(theta * sample);
-        wx = X2 + cx;
-        wy = Y2 + cy;
-        wz = Z2 + cz;
-        i++;
-    }
-    return (i >= iterCount);
-}
-uint8_t voxBulb8(ivec3 P, ivec3 S)
-{
-    float sample = 16;
-    int iterCount = 8;
-    int i = 0;
-    float cx = 1.1 * (P.x - S.x / 2.f) / float(S.x / 2.0f); // this is done so the whole bulb can be seen
-    float cy = 1.1 * (P.y - S.y / 2.f) / float(S.y / 2.0f);
-    float cz = 1.1 * (P.z - S.z / 2.f) / float(S.z / 2.0f);
-    float r = 0;
-    float theta;
-    float phi;
-    float wx = cx, wy = cy, wz = cz;
-    while (i < iterCount && r <= 2)
-    {
-        r = sqrt(wx * wx + wy * wy + wz * wz);
-        theta = atan2(sqrt(wx * wx + wy * wy), wz);
-        phi = atan2(wy, wx);
-        float X2 = pow(r, sample) * sin(theta * sample) * cos(phi * sample);
-        float Y2 = pow(r, sample) * sin(theta * sample) * sin(phi * sample);
-        float Z2 = pow(r, sample) * cos(theta * sample);
-        wx = X2 + cx;
-        wy = Y2 + cy;
-        wz = Z2 + cz;
-        i++;
-    }
-    return (i >= iterCount);
-}
+struct palette{
+	uint32_t C[256];	
+	//each color can be represented by a Hex code such as C[x] = 7dbd2aff	
+	//note: alpha is currently not supported, as a good practice we will set it to "ff" for 256
+};
 
 class scene
 {
@@ -320,12 +112,14 @@ public:
     sphere *spherelist = new sphere[1];
     cube *cubelist = new cube[1];
     VoxelOBJ *voxellist = new VoxelOBJ[1];
-    int numSpheres, numCubes, numVoxels;
+    palette *palettelist = new palette[1];
+    int numSpheres, numCubes, numVoxels, numPalettes;
     scene(int numofSpheres, int numofCubes)
     {
         delete[] spherelist;
         delete[] cubelist;
         delete[] voxellist;
+	delete[] palettelist;
         numSpheres = numofSpheres;
         numCubes = numofCubes;
         spherelist = new sphere[numofSpheres];
@@ -380,10 +174,8 @@ public:
             cubelist[i].roughthness = getrand(0, 255) / 255.0;
         }
     }
-    void ToSSBOData(std::string param, float *&data)
+    void getspheredata(float *& data)
     {
-        if (param == "GET_SPHERE_DATA")
-        {
             data = new float[numSpheres * 9];
             for (int i = 0; i < numSpheres; i++)
             {
@@ -397,10 +189,10 @@ public:
                 data[(9 * i) + 7] = spherelist[i].transparency;
                 data[(9 * i) + 8] = spherelist[i].roughthness;
             }
-        }
-        if (param == "GET_CUBE_DATA")
-        {
-            data = new float[numCubes * 14];
+    }
+    void getcubedata(float *& data)
+    {
+    	 data = new float[numCubes * 14];
             for (int i = 0; i < numCubes; i++)
             {
                 data[(14 * i)] = cubelist[i].PosX;
@@ -418,34 +210,54 @@ public:
                 data[(14 * i) + 12] = cubelist[i].transparency;
                 data[(14 * i) + 13] = cubelist[i].roughthness;
             }
-        }
-        if (param == "GET_VOXEL_DATA")
-        {
-            data = new float[numVoxels * 15];
+
+    }
+    void getvoxeldata(float *& data)
+    {
+   	data = new float[numVoxels * 16];
             for (int i = 0; i < numVoxels; i++)
             {
-                data[(15 * i)] = voxellist[i].PosX;
-                data[(15 * i) + 1] = voxellist[i].PosY;
-                data[(15 * i) + 2] = voxellist[i].PosZ;
-                data[(15 * i) + 3] = voxellist[i].SizeX;
-                data[(15 * i) + 4] = voxellist[i].SizeY;
-                data[(15 * i) + 5] = voxellist[i].SizeZ;
-                data[(15 * i) + 6] = voxellist[i].RotX;
-                data[(15 * i) + 7] = voxellist[i].RotY;
-                data[(15 * i) + 8] = voxellist[i].RotZ;
-                data[(15 * i) + 9] = voxellist[i].texOffsetX;
-                data[(15 * i) + 10] = voxellist[i].texOffsetY;
-                data[(15 * i) + 11] = voxellist[i].texOffsetZ;
-                data[(15 * i) + 12] = voxellist[i].SampleSizeX;
-                data[(15 * i) + 13] = voxellist[i].SampleSizeY;
-                data[(15 * i) + 14] = voxellist[i].SampleSizeZ;
-            }
-        }
+                data[(16 * i)] = voxellist[i].PosX;
+                data[(16 * i) + 1] = voxellist[i].PosY;
+                data[(16 * i) + 2] = voxellist[i].PosZ;
+                data[(16 * i) + 3] = voxellist[i].SizeX;
+                data[(16 * i) + 4] = voxellist[i].SizeY;
+                data[(16 * i) + 5] = voxellist[i].SizeZ;
+                data[(16 * i) + 6] = voxellist[i].RotX;
+                data[(16 * i) + 7] = voxellist[i].RotY;
+                data[(16 * i) + 8] = voxellist[i].RotZ;
+                data[(16 * i) + 9] = voxellist[i].texOffsetX;
+                data[(16 * i) + 10] = voxellist[i].texOffsetY;
+                data[(16 * i) + 11] = voxellist[i].texOffsetZ;
+                data[(16 * i) + 12] = voxellist[i].SampleSizeX;
+                data[(16 * i) + 13] = voxellist[i].SampleSizeY;
+                data[(16 * i) + 14] = voxellist[i].SampleSizeZ;
+		data[(16 * i) + 15] = voxellist[i].PaletteID;
+            }  
     }
+    void getpalettedata(uint32_t *& data)
+    {
+     	data = new uint32_t[numPalettes * 256];
+	    for(int j = 0; j < numPalettes; j++){
+	    	for(int i = 0; i < 256; i++){
+	    		data[(256*j)+i] = palettelist[j].C[i];
+	   	 }
+	    } 
+    } 
     // amogus
 };
-
-void AppendVoxList(scene &world, ivec3 TexSize, ivec3 TexOffset, vec3 Pos, vec3 Rot, float size)
+void AppendPaletteList(scene &world,palette colours)
+{
+	world.numPalettes += 1;
+	palette * temp = new palette[world.numPalettes];
+	memcpy(temp,world.palettelist,sizeof(world.palettelist));
+	free(world.palettelist);
+	temp[world.numPalettes-1] = colours;
+	world.palettelist = new palette[world.numPalettes];
+	memcpy(world.palettelist,temp,sizeof(temp));
+	free(temp);
+}
+void AppendVoxList(scene &world, ivec3 TexSize, ivec3 TexOffset, vec3 Pos, vec3 Rot, float size,int paletteID)
 {
     // creating the readable voxel object for the class
     VoxelOBJ obj;
@@ -461,6 +273,7 @@ void AppendVoxList(scene &world, ivec3 TexSize, ivec3 TexOffset, vec3 Pos, vec3 
     obj.SampleSizeX = TexSize.x;
     obj.SampleSizeY = TexSize.y;
     obj.SampleSizeZ = TexSize.z;
+    obj.PaletteID = float(paletteID);
     // calculating the relative size
     float sizeX, sizeY, sizeZ;
     sizeX = size;
@@ -526,14 +339,14 @@ void FillvoxelTex(GLuint texture, uint8_t (*filler)(ivec3, ivec3), ivec3 TexSize
                     data);
     free(data); // freeing space once we've used it
 }
-void CreateVoxelOBJ(scene &world, GLuint texture, uint8_t (*filler)(ivec3, ivec3), ivec3 TexSize, ivec3 TexOffset, vec3 Pos, vec3 Rot, float size)
+void CreateVoxelOBJ(scene &world, GLuint texture, uint8_t (*filler)(ivec3, ivec3), ivec3 TexSize, ivec3 TexOffset, vec3 Pos, vec3 Rot, float size,int paletteID)
 {
     // first we fill the 3D texture
     //----------------------------
     FillvoxelTex(texture, filler, TexSize, TexOffset);
     // second we code the information so that our class "scene" knows what to make of it
     //---------------------------------------------------------------------------------
-    AppendVoxList(world, TexSize, TexOffset, Pos, Rot, size);
+    AppendVoxList(world, TexSize, TexOffset, Pos, Rot, size, paletteID);
     // all done! :D
 }
 

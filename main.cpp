@@ -8,6 +8,7 @@
 #include "TimeSync.h"
 #include "debug.h"
 #include "data.h"
+#include "objects.h"
 #define PI 3.14159
 
 void framebuffer_size_callback(GLFWwindow *window, int width, int height);
@@ -31,6 +32,12 @@ float camX = 0, camY = 10, camZ = -20, rotX = 0, rotY = 0, rotZ = 0, speed = 0, 
 scene showcase(10, 10); // 40 sphere 20 boxes 1 voxel object
 int main()
 {
+    if (__cplusplus == 201703L) std::cout << "C++17\n";
+    else if (__cplusplus == 202002L) std::cout << "C++20\n";
+    else if (__cplusplus == 201402L) std::cout << "C++14\n";
+    else if (__cplusplus == 201103L) std::cout << "C++11\n";
+    else if (__cplusplus == 199711L) std::cout << "C++98\n";	
+    else std::cout << "pre-standard C++\n";
     // glfw: initialize and configure
     // ------------------------------
     glfwInit();
@@ -44,7 +51,7 @@ int main()
 
     // glfw window creation
     // --------------------
-    GLFWwindow *window = glfwCreateWindow(SCR_WIDTH, SCR_HEIGHT, "loading...", NULL, NULL);
+    GLFWwindow *window = glfwCreateWindow(SCR_WIDTH, SCR_HEIGHT, "Raytracer", NULL, NULL);
     if (window == NULL)
     {
         std::cout << "Failed to create GLFW window" << std::endl;
@@ -105,35 +112,25 @@ int main()
                    GL_R8UI, // Internal format
                    1024, 1024, 1024);
     glMemoryBarrier(GL_TEXTURE_UPDATE_BARRIER_BIT);
-    CreateVoxelOBJ(showcase, voxATLAS,
-                   &voxBulb,
-                   {100, 100, 100},
-                   {0, 0, 0},
-                   {getrand(-75 * 100.0, 75 * 100.0) / 100, getrand(0 * 100.0, 75 * 100.0) / 100, getrand(-75 * 100.0, 75 * 100.0) / 100},
-                   {0 * getrand(-75 * 100.0, 75 * 100.0) / 100, 0 * getrand(0 * 100.0, 75 * 100.0) / 100, 0 * getrand(-75 * 100.0, 75 * 100.0) / 100},
-                   16);
-
-    FillvoxelTex(voxATLAS, &voxBulb1, {100, 100, 100}, {100, 0, 0});
-    FillvoxelTex(voxATLAS, &voxBulb2, {100, 100, 100}, {200, 0, 0});
-    FillvoxelTex(voxATLAS, &voxBulb3, {100, 100, 100}, {300, 0, 0});
-    FillvoxelTex(voxATLAS, &voxBulb4, {100, 100, 100}, {400, 0, 0});
-    FillvoxelTex(voxATLAS, &voxBulb5, {100, 100, 100}, {500, 0, 0});
-    FillvoxelTex(voxATLAS, &voxBulb6, {100, 100, 100}, {600, 0, 0});
-    FillvoxelTex(voxATLAS, &voxBulb7, {100, 100, 100}, {700, 0, 0});
-    FillvoxelTex(voxATLAS, &voxBulb8, {100, 100, 100}, {800, 0, 0});
     glMemoryBarrier(GL_TEXTURE_UPDATE_BARRIER_BIT);
     // creating a 3D texture to send it to the GPU
-
+	
+    populatescene(showcase,voxATLAS);
     // this is how i transfer the content of the different object arrays
     //-----------------------------------------------------------------
     float *spheresarray;
-    showcase.ToSSBOData("GET_SPHERE_DATA", spheresarray);
+    showcase.getspheredata(spheresarray);
 
     float *cubesarray;
-    showcase.ToSSBOData("GET_CUBE_DATA", cubesarray);
+    showcase.getcubedata(cubesarray);
 
     float *voxelsarray;
-    showcase.ToSSBOData("GET_VOXEL_DATA", voxelsarray);
+    showcase.getvoxeldata(voxelsarray);
+
+    uint32_t *palettesarray;
+    showcase.getpalettedata(palettesarray);
+    std::cout<<"first element of first palette: "<<palettesarray[0]<<std::endl;
+
     // transphering Sphere Data:
     //-------------------------
     int SarrSize = (4 * showcase.numSpheres * 9);
@@ -155,13 +152,24 @@ int main()
 
     // transphering Voxel Data:
     //-------------------------
-    int VarrSize = (4 * showcase.numVoxels * 15);
+    int VarrSize = (4 * showcase.numVoxels * 16);
     GLuint VOXssbo;
     glGenBuffers(1, &VOXssbo);
     glBindBuffer(GL_SHADER_STORAGE_BUFFER, VOXssbo);
     glBufferData(GL_SHADER_STORAGE_BUFFER, VarrSize, voxelsarray, GL_STATIC_DRAW);
     glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 3, VOXssbo);
     //-------------------------
+
+    // transphering Palette Data:
+    //-------------------------
+    int ParrSize = (4 * showcase.numPalettes * 256);
+    GLuint PALssbo;
+    glGenBuffers(1, &PALssbo);
+    glBindBuffer(GL_SHADER_STORAGE_BUFFER, PALssbo);
+    glBufferData(GL_SHADER_STORAGE_BUFFER, ParrSize, palettesarray, GL_STATIC_DRAW);
+    glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 4, PALssbo);
+    //-------------------------
+
 
     glUseProgram(0); // clearing any program already linked
     // -----------
@@ -192,10 +200,9 @@ int main()
             // make the voxel objects spin around!
             for (int i = 0; i < showcase.numVoxels; i++)
             {
-                voxelsarray[6 + (i * 15)] = 0.3 * (voxelsarray[0 + (i * 15)] + voxelsarray[2 + (i * 15)] + glfwGetTime()); // these are the value for rotation X
-                voxelsarray[7 + (i * 15)] = 0.3 * (voxelsarray[0 + (i * 15)] + voxelsarray[2 + (i * 15)] + glfwGetTime()); // Y
-                voxelsarray[8 + (i * 15)] = 0.3 * (voxelsarray[0 + (i * 15)] + voxelsarray[2 + (i * 15)] + glfwGetTime()); // and Z
-                voxelsarray[9 + (i * 15)] = 100 * floor(4.5 * (1 + sin(2.5 * glfwGetTime())));
+                voxelsarray[6 + (i * 16)] = 0.3 * (voxelsarray[0 + (i * 16)] + voxelsarray[2 + (i * 16)] + glfwGetTime()); // these are the value for rotation X
+                voxelsarray[7 + (i * 16)] = 0.3 * (voxelsarray[0 + (i * 16)] + voxelsarray[2 + (i * 16)] + glfwGetTime()); // Y
+                voxelsarray[8 + (i * 16)] = 0.3 * (voxelsarray[0 + (i * 16)] + voxelsarray[2 + (i * 16)] + glfwGetTime()); // and Z
             }
 
             glBindBuffer(GL_SHADER_STORAGE_BUFFER, VOXssbo);
