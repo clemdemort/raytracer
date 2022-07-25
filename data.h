@@ -240,21 +240,28 @@ public:
      	data = new uint32_t[numPalettes * 256];
 	    for(int j = 0; j < numPalettes; j++){
 	    	for(int i = 0; i < 256; i++){
-	    		data[(256*j)+i] = palettelist[j].C[i];
+			data[(256*j)+i] = palettelist[j].C[i];
+			//printf("%u data: %x\n",palettelist[j].C[i],data[(256*j)+i]);
 	   	 }
 	    } 
     } 
     // amogus
 };
+//the memory allocation here doesnt seem to work this should be in priority to be fixed!
 void AppendPaletteList(scene &world,palette colours)
 {
 	world.numPalettes += 1;
 	palette * temp = new palette[world.numPalettes];
-	memcpy(temp,world.palettelist,sizeof(world.palettelist));
+	for(int i = 0; i < world.numPalettes-2;i++){
+		memcpy(temp[i].C,world.palettelist[i].C,sizeof(world.palettelist[0]));
+	}
 	free(world.palettelist);
 	temp[world.numPalettes-1] = colours;
 	world.palettelist = new palette[world.numPalettes];
-	memcpy(world.palettelist,temp,sizeof(temp));
+	
+	for(int i = 0; i < world.numPalettes;i++){
+		memcpy(world.palettelist[i].C,temp[i].C,sizeof(world.palettelist[0]));
+	}
 	free(temp);
 }
 void AppendVoxList(scene &world, ivec3 TexSize, ivec3 TexOffset, vec3 Pos, vec3 Rot, float size,int paletteID)

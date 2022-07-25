@@ -114,7 +114,8 @@ int main()
     glMemoryBarrier(GL_TEXTURE_UPDATE_BARRIER_BIT);
     glMemoryBarrier(GL_TEXTURE_UPDATE_BARRIER_BIT);
     // creating a 3D texture to send it to the GPU
-	
+    
+    //populating the scene with various objects	
     populatescene(showcase,voxATLAS);
     // this is how i transfer the content of the different object arrays
     //-----------------------------------------------------------------
@@ -130,6 +131,11 @@ int main()
     uint32_t *palettesarray;
     showcase.getpalettedata(palettesarray);
     std::cout<<"first element of first palette: "<<palettesarray[0]<<std::endl;
+    std::cout<<"second element of first palette: "<<palettesarray[1]<<std::endl;
+    std::cout<<"third element of first palette: "<<palettesarray[2]<<std::endl;
+    std::cout<<"fourth element of first palette: "<<palettesarray[3]<<std::endl;
+    std::cout<<"fith element of first palette: "<<palettesarray[4]<<std::endl;
+    std::cout<<"sixth element of first palette: "<<palettesarray[5]<<std::endl;
 
     // transphering Sphere Data:
     //-------------------------

@@ -236,12 +236,11 @@ vec4 DeCompressCol(uint col)
     uint G = ((col - (R * (256 * 256 * 256))) / (256 * 256));//gets green hue
     uint B = ((col - (R * (256 * 256 * 256) + (G * 256 * 256))) / (256));//gets blue hue
     uint A = ((col - (R * (256 * 256 * 256) + (G * 256 * 256) + (B * 256))));   //gets alpha hue
-    float Rf = float(R)/256.;
-    float Gf = float(G)/256.;
-    float Bf = float(B)/256.;
-    float Af = float(A)/256.; 
+    float Rf = float(R)/255.;
+    float Gf = float(G)/255.;
+    float Bf = float(B)/255.;
+    float Af = float(A)/255.; 
     vec4 finalcolor = vec4(Rf,Gf,Bf,Af);
-    finalcolor = vec4(0.7,0,0,1);
     return finalcolor;
 }
 vec4 palette(float value, float IDX)
