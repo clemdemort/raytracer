@@ -8,7 +8,7 @@
 
 float getrand(int min, int max)
 {
-    return min + (rand() % (max - min));
+    return min + (rand() % ((max+1) - min));
 }
 
 struct ivec3
@@ -97,7 +97,7 @@ uint8_t voxBulb(ivec3 P, ivec3 S)
         wz = Z2 + cz;
         i++;
     }
-    return (i >= iterCount)*getrand(1,4);
+    return (i >= iterCount)*(1+(P.x%4));
 }
 
 struct palette{
@@ -252,15 +252,15 @@ void AppendPaletteList(scene &world,palette colours)
 {
 	world.numPalettes += 1;
 	palette * temp = new palette[world.numPalettes];
-	for(int i = 0; i < world.numPalettes-2;i++){
-		memcpy(temp[i].C,world.palettelist[i].C,sizeof(world.palettelist[0]));
+	for(int i = 0; i < world.numPalettes-1;i++){
+		temp[i] = world.palettelist[i];
 	}
-	free(world.palettelist);
+	//free(world.palettelist);
 	temp[world.numPalettes-1] = colours;
 	world.palettelist = new palette[world.numPalettes];
 	
 	for(int i = 0; i < world.numPalettes;i++){
-		memcpy(world.palettelist[i].C,temp[i].C,sizeof(world.palettelist[0]));
+		world.palettelist[i] = temp[i];
 	}
 	free(temp);
 }
