@@ -29,7 +29,7 @@ TimeSync Titlesync; // speed at which the title should be refreshed
 // initialise the camera position
 //------------------------------
 float camX = 0, camY = 10, camZ = -20, rotX = 0, rotY = 0, rotZ = 0, speed = 0, latspeed = 0;
-scene showcase(10, 10); // 40 sphere 20 boxes 1 voxel object
+scene showcase; // initializing the scene
 int main()
 {
     if (__cplusplus == 201703L) std::cout << "C++17\n";
@@ -129,14 +129,7 @@ int main()
     showcase.getvoxeldata(voxelsarray);
 
     uint32_t *palettesarray;
-    showcase.getpalettedata(palettesarray);
-    std::cout<<"first element of first palette: "<<palettesarray[0]<<std::endl;
-    std::cout<<"second element of first palette: "<<palettesarray[1]<<std::endl;
-    std::cout<<"third element of first palette: "<<palettesarray[2]<<std::endl;
-    std::cout<<"fourth element of first palette: "<<palettesarray[3]<<std::endl;
-    std::cout<<"fith element of first palette: "<<palettesarray[4]<<std::endl;
-    std::cout<<"sixth element of first palette: "<<palettesarray[5]<<std::endl;
-
+    showcase.getpalettedata(palettesarray);	
     // transphering Sphere Data:
     //-------------------------
     int SarrSize = (4 * showcase.numSpheres * 9);
@@ -204,7 +197,7 @@ int main()
             glBufferSubData(GL_SHADER_STORAGE_BUFFER, 0, CarrSize, cubesarray);
 
             // make the voxel objects spin around!
-            for (int i = 0; i < showcase.numVoxels; i++)
+            /*for (int i = 0; i < showcase.numVoxels; i++)
             {
                 voxelsarray[6 + (i * 16)] = 0.3 * (voxelsarray[0 + (i * 16)] + voxelsarray[2 + (i * 16)] + glfwGetTime()); // these are the value for rotation X
                 voxelsarray[7 + (i * 16)] = 0.3 * (voxelsarray[0 + (i * 16)] + voxelsarray[2 + (i * 16)] + glfwGetTime()); // Y
@@ -212,7 +205,7 @@ int main()
             }
 
             glBindBuffer(GL_SHADER_STORAGE_BUFFER, VOXssbo);
-            glBufferSubData(GL_SHADER_STORAGE_BUFFER, 0, VarrSize, voxelsarray);
+            glBufferSubData(GL_SHADER_STORAGE_BUFFER, 0, VarrSize, voxelsarray);*/
         }
         if (Vsync.Sync(100))
         { // found out that this makes the framerate a bit more stable in some cases

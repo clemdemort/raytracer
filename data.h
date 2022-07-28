@@ -5,6 +5,10 @@
 #include <time.h>
 #include <math.h>
 #include <cstring>
+#include <fstream>
+#include <sys/stat.h>
+#define OGT_VOX_IMPLEMENTATION
+#include "tools/ogt_vox.h"
 
 float getrand(int min, int max)
 {
@@ -15,11 +19,12 @@ struct ivec3
 {
     int x, y, z;
 };
-
+//this is defined in the ogt header for some reason?? so i'll just comment it out until i find an alternative or somthing
+/*
 struct vec3
 {
     float x, y, z;
-};
+};*/
 struct sphere // 9 floats
 {
     // Param 1
@@ -42,7 +47,7 @@ struct cube // 14 floats
 };
 
 // a voxel object is a basic box in which we raymarch a 3D texture
-struct VoxelOBJ // 15 floats
+struct VoxelOBJ // 16 floats
 {
     // Param 1
     float PosX, PosY, PosZ;
@@ -113,19 +118,16 @@ public:
     cube *cubelist = new cube[1];
     VoxelOBJ *voxellist = new VoxelOBJ[1];
     palette *palettelist = new palette[1];
-    int numSpheres, numCubes, numVoxels, numPalettes;
-    scene(int numofSpheres, int numofCubes)
+    int numSpheres, numCubes, numVoxels, numPalettes = 0;
+    scene()
     {
-        delete[] spherelist;
+        /*
+	delete[] spherelist;
         delete[] cubelist;
         delete[] voxellist;
 	delete[] palettelist;
-        numSpheres = numofSpheres;
-        numCubes = numofCubes;
-        spherelist = new sphere[numofSpheres];
-        cubelist = new cube[numofCubes];
-        voxellist = new VoxelOBJ[1];
-        //------------------------------------
+        
+	//------------------------------------
         // this part will be responsible for generating the geometry so it should be easy enough to tweak
 
         // 1st we will generate the spheres
@@ -140,7 +142,6 @@ public:
         float maxSize = 5;
 
         // initialising the random seed
-        srand(time(NULL));
 
         for (int i = 0; i < numofSpheres; i++)
         {
@@ -172,7 +173,7 @@ public:
             cubelist[i].colourBLUE = getrand(0, 255) / 255.0;
             cubelist[i].transparency = getrand(0, 255) / 255.0;
             cubelist[i].roughthness = getrand(0, 255) / 255.0;
-        }
+        }*/
     }
     void getspheredata(float *& data)
     {
@@ -247,7 +248,36 @@ public:
     } 
     // amogus
 };
-//the memory allocation here doesnt seem to work this should be in priority to be fixed!
+void AppendSphereList(scene &world,sphere object)
+{
+	world.numSpheres += 1;
+	sphere * temp = new sphere[world.numSpheres];
+	for(int i = 0; i < world.numSpheres-1;i++){
+		temp[i] = world.spherelist[i];
+	}
+	temp[world.numSpheres-1] = object;
+	world.spherelist = new sphere[world.numSpheres];
+	
+	for(int i = 0; i < world.numSpheres;i++){
+		world.spherelist[i] = temp[i];
+	}
+	free(temp);
+}
+void AppendCubeList(scene &world,cube object)
+{
+	world.numCubes += 1;
+	cube * temp = new cube[world.numCubes];
+	for(int i = 0; i < world.numCubes-1;i++){
+		temp[i] = world.cubelist[i];
+	}
+	temp[world.numCubes-1] = object;
+	world.cubelist = new cube[world.numCubes];
+	
+	for(int i = 0; i < world.numCubes;i++){
+		world.cubelist[i] = temp[i];
+	}
+	free(temp);
+}
 void AppendPaletteList(scene &world,palette colours)
 {
 	world.numPalettes += 1;
@@ -356,5 +386,70 @@ void CreateVoxelOBJ(scene &world, GLuint texture, uint8_t (*filler)(ivec3, ivec3
     AppendVoxList(world, TexSize, TexOffset, Pos, Rot, size, paletteID);
     // all done! :D
 }
+long FdGetFileSize(int fd)
+{
+	struct stat stat_buf;
+	int rc = fstat(fd, &stat_buf);
+	return rc == 0 ? stat_buf.st_size : -1;
+}
+void ImportVoxelOBJ(scene &world, GLuint texture,const char * path,ivec3 TexOffset,vec3 Pos, vec3 Rot, float size)
+{
+	//first we must actually copy the voxel data into the atlas
+	FILE* fp = fopen(path, "rb");
+	uint32_t buffer_size = FdGetFileSize(fileno(fp));
+	uint8_t* buffer = new uint8_t[buffer_size];
+	fread(buffer, buffer_size, 1, fp);
+	fclose(fp);
+	
+	const ogt_vox_scene* scene = ogt_vox_read_scene(buffer, buffer_size);
+	delete[] buffer;
+	const ogt_vox_model* model = scene->models[0];
+	ivec3 TexSize = {int(model->size_x),int(model->size_y),int(model->size_z)};
+	printf("x: %d y: %d z: %d\n",TexSize.x,TexSize.y,TexSize.z);
+	uint8_t *data = new uint8_t[TexSize.x * TexSize.y * TexSize.z];
+    	uint32_t index = 0;
+	for (int x = 0; x < TexSize.x; x++)
+    	{
+        	for (int y = 0; y < TexSize.y; y++)
+        	{
+            		for (int z = 0; z < TexSize.z; z++, index++)
+            		{
+                		data[index] 
+				= model->voxel_data[index];
+				//printf("data: %d",data[index]);
+            		}
+        	}
+    	}
+    	int a = TexSize.x;
+    	int b = TexSize.y;
+    	int c = TexSize.z;
+    
+    	// sending data into the texture we specified:
+    	glBindTexture(GL_TEXTURE_3D, texture);
+    	glTexSubImage3D(GL_TEXTURE_3D,
+                    0,                                     // Mipmap number
+                    TexOffset.x, TexOffset.y, TexOffset.z, // xoffset, yoffset, zoffset
+                    a, b, c,                               // width, height, depth
+                    GL_RED_INTEGER,                        // format
+                    GL_UNSIGNED_BYTE,                      // type
+                    data);
+    	free(data); // freeing space once we've used it
+	
+	//secondly we must get the palette data and ! SAVE THE NUMBER OF PALETTES !
+	palette colours;
+	for(int i = 0; i < 256; i++)
+	{
+		colours.C[i] = uint32_t(
+scene->palette.color[i].r*256*256*256 + scene->palette.color[i].g*256*256 + scene->palette.color[i].b*256 + scene->palette.color[i].a);
 
+	}
+	//printf("palette : %x",scene->palette.color);
+	AppendPaletteList(world,colours);
+	ogt_vox_destroy_scene(scene);
+
+	//printf("\nnum of palettes :%d",world.numPalettes);
+	//we create a voxel object and assign it the voxel model and the corresponding palette
+	AppendVoxList(world, {TexSize.z,TexSize.y,TexSize.x}, TexOffset, Pos, Rot, size,world.numPalettes-1);
+	//piece of cake, let's go!
+}
 #endif

@@ -298,7 +298,7 @@ vec4 renderPass(vec3 rayDir, vec3 rayPos,vec4 oldColour)
     for(int i = 0; i < voxelNUM; i++){
         vec3 pos = vec3(voxel_SSBO[0+(i*16)],voxel_SSBO[1+(i*16)],voxel_SSBO[2+(i*16)]);
         vec3 boxSize = vec3(voxel_SSBO[3+(i*16)],voxel_SSBO[4+(i*16)],voxel_SSBO[5+(i*16)]);
-        vec3 rotation = vec3(voxel_SSBO[6+(i*16)],voxel_SSBO[7+(i*16)],voxel_SSBO[8+(i*16)]);
+        vec3 rotation = vec3(voxel_SSBO[6+(i*16)],voxel_SSBO[7+(i*16)],voxel_SSBO[8+(i*16)]-acos(0));
         ivec3 listOffset = ivec3(voxel_SSBO[9+(i*16)],voxel_SSBO[10+(i*16)],voxel_SSBO[11+(i*16)]);
         ivec3 SampleSize = ivec3(voxel_SSBO[12+(i*16)],voxel_SSBO[13+(i*16)],voxel_SSBO[14+(i*16)]);
         vec3 temp = normal;
@@ -376,7 +376,7 @@ void main()
     FragColor.xyz = sceneParam;
     if(getNormals == 1){                //to help us visualize normals
         //FragColor.xyz = ((1+normal.xyz)*0.5);
-        FragColor.xyz = reps*vec3(((1+normal.xyz)*0.5))/10.0;
+        FragColor.xyz = reps* vec3(((1+normal.xyz)*0.5))/10.0;
     }else{                              //if we are visualizing normals we arent interested in shadows.
         rayPos = rayPos+(rayDir*HDistance.x)+(normal*bias*HDistance.x); //we need some variable bias to prevent "shadow acne"
         rayDir = normalize(sunDir);
