@@ -24,8 +24,7 @@ second off, install my configuration of glad which you can find here:
 download the zip file and put the header files in the "glad" folder, put "glad.c" alongside "main.cpp". (if it doesnt compile try changing '#include <glad/glad.h>' to ' #include "glad/glad.h" ' in glad.c) 
 
 finaly in your terminal type in the project directory:
-> g++ main.cpp glad.c -lglfw -lGL -lX11 -lpthread -lXrandr -lXi -ldl -o executable
-
+> make
 
 # controls:
 
